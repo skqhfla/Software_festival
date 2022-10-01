@@ -14,6 +14,12 @@ public class Betago {
 		playBoard = B.board;
 	}
 	
+	//중간에 보드 임시로 원본이랑 끊어진,,그거... 
+	private static void getTempBoard(int x, int y) {
+		playBoard = playBoard.clone();
+		playBoard[x][y] = color;
+	}
+	
 	
 
 	//integer 형태의 이상적 좌표를 형식에 맞춘 String으로 바꿔 리턴(다음에 놓을 그거임. 스톤 하나하나 기준.)
@@ -28,7 +34,8 @@ public class Betago {
 		
 		//일단여기는절대두지말라는뜻!!!! board를 직접 수정하면 NOTEMPTY에러가 나서 임시방편으로... 
 		weight[x][y] = -10000;
-		//방금 자기가 놓은거 업데이트해주고 
+		getTempBoard(x, y);
+		//방금 자기가 놓은거 업데이트해주고
 		addWeight(x, y);
 		
 
@@ -40,6 +47,8 @@ public class Betago {
 		
 		String result = stone1 + ":" + stone2;
 		//System.out.println(result);
+		
+		showWeight();
 		
 		return result;
 		
