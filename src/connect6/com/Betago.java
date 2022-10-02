@@ -1,1226 +1,1159 @@
 package connect6.com;
+
 public class Betago {
-	
-	//모든 돌이 놓일 때 마다 addWeight 실행시켜주고,
-	//AI턴에서는 returnPoint로 받아오기
-	
+
+	// 모든 돌이 놓일 때 마다 addWeight 실행시켜주고,
+	// AI턴에서는 returnPoint로 받아오기
+
 	static int color = DummyAI.getMyColor();
 	static int opponent = DummyAI.getYourColor();
 	private static int[][] playBoard = new int[19][19];
 	private static int[][] origin = new int[19][19];
-	
-	
-	//copy... (얕은복사라 주소지까지 연결된...)
+
+	// copy... (얕은복사라 주소지까지 연결된...)
 	public static void getBoard(ConnectSix.Board B) {
 		origin = B.board;
 	}
-	
-	//중간에 보드 임시로 원본이랑 끊어진,,그거... 
+
+	// 중간에 보드 임시로 원본이랑 끊어진,,그거...
 	private static void getTempBoard(int x, int y) {
 		playBoard[x][y] = color;
 	}
-	
-	
 
-	//integer 형태의 이상적 좌표를 형식에 맞춘 String으로 바꿔 리턴(다음에 놓을 그거임. 스톤 하나하나 기준.)
+	// integer 형태의 이상적 좌표를 형식에 맞춘 String으로 바꿔 리턴(다음에 놓을 그거임. 스톤 하나하나 기준.)
 	public static String returnStringCoor() {
-		
-		for(int i = 0; i < 19; i++) {
-			for(int j = 0; j < 19; j++) {
-				playBoard[i][j] = origin[i][j];
+
+		for (int i = 18; i >= 0; i--) {
+			for (int j = 0; j < 19; j++) {
+				playBoard[j][i] = origin[j][i];
+				System.out.printf("[%2d]", playBoard[j][i]);
+			}
+			System.out.println("");
+		}
+
+		returnPoint();
+		// x, y를 바탕으로 String형태의 머시깽이...
+		String stone1 = String.format("%c%02d", (char) ((x < 8) ? (x + 'A') : (x + 'A' + 1)), y + 1);
+
+		// 일단여기는절대두지말라는뜻!!!! board를 직접 수정하면 NOTEMPTY에러가 나서 임시방편으로...
+		getTempBoard(x, y);
+		// 방금 자기가 놓은거 업데이트해주고
+
+		returnPoint();
+		String stone2 = String.format("%c%02d", (char) ((x < 8) ? (x + 'A') : (x + 'A' + 1)), y + 1);
+
+		String result = stone1 + ":" + stone2;
+
+		showWeight();
+
+		return result;
+
+	}
+
+	// 현재 산출된 이상적 좌표
+	static int x;
+	static int y;
+	// 가중치 설정을 위한 배열
+	static int[][] weight = new int[19][19]; // 일반가중치(계속 누적)
+	static int[][] superWeight = new int[19][19]; // 특수가중치(매 분석마다 리셋후 시작)
+
+	// 판 읽고 특수가중치 누적하기
+	private static void addSuperWeight() {
+
+		// 특수가중치 판 초기화
+		for (int i = 0; i < 19; i++) {
+			for (int j = 0; j < 19; j++) {
+				superWeight[i][j] = 0;
 			}
 		}
-		
-		returnPoint();
-		//x, y를 바탕으로 String형태의 머시깽이...
-		String stone1 = String.format("%c%02d", (char)((x<8)?(x+'A'):(x+'A'+1)), y+1);
-		
-		
-		//일단여기는절대두지말라는뜻!!!! board를 직접 수정하면 NOTEMPTY에러가 나서 임시방편으로... 
-		getTempBoard(x, y);
-		//방금 자기가 놓은거 업데이트해주고
-		
 
-		returnPoint();
-		String stone2 = String.format("%c%02d", (char)((x<8)?(x+'A'):(x+'A'+1)), y+1);
-		
-		
-		String result = stone1 + ":" + stone2;
-		
-		showWeight();
-		
-		return result;
-		
+		int myCount = 0, yourCount = 0, emptyCount = 0, check;
+
+		//// 놓으면 이길 때(한방승리)
+		// -------------------------------------------------------------------------------------
+
+		for (int i = 0; i < 19; i++) { // 0~18
+			for (int j = 0; j < 14; j++) { // 0~12
+
+				myCount = 0;
+				emptyCount = 0;
+
+				for (int k = 0; k < 6; k++) { // 13~18
+					if (playBoard[i][j + k] == color)
+						myCount++;
+					else if (playBoard[i][j + k] == 0)
+						emptyCount++;
+				}
+
+				// 칠목방지
+				if ((j - 1 < 0 || playBoard[i][j - 1] == color) || (j + 6 > 18 || playBoard[i][j + 6] == color))
+					continue;
+
+				if (myCount + emptyCount == 6) {
+					for (int k = 0; k < 6; k++) { // 13~18
+
+						if (playBoard[i][j + k] == 0) {
+							if (myCount >= 4) {
+								superWeight[i][j + k] += 500;
+								return;
+							} else if (myCount == 3) {
+								superWeight[i][j + k] += 100;
+							}
+						}
+					}
+				}
+
+			}
+		}
+
+		// 가로 공격 시작점
+		// -------------------------------------------------------------------------------------------------
+		for (int j = 0; j < 19; j++) {
+			for (int i = 0; i < 14; i++) {
+
+				myCount = 0;
+				emptyCount = 0;
+
+				for (int k = 0; k < 6; k++) {
+					if (playBoard[i + k][j] == color)
+						myCount++;
+					else if (playBoard[i + k][j] == 0)
+						emptyCount++;
+				}
+
+				// 7mok nono
+				if ((i - 1 < 0 || playBoard[i - 1][j] == color) || (i + 6 > 18 || playBoard[i + 6][j] == color))
+					continue;
+
+				if (myCount + emptyCount == 6) {
+					for (int k = 0; k < 6; k++) { // 13~18
+						if (playBoard[i + k][j] == 0) {
+							if (myCount >= 4) {
+								superWeight[i + k][j] += 500;
+								return;
+							} else if (myCount == 3) {
+								superWeight[i + k][j] += 100;
+							}
+						}
+					}
+				}
+
+			}
+		}
+
+		// 좌대각 공격 시작점
+		// ----------------------------------------------------------------------
+		for (int i = 0; i < 14; i++) { // 0~13
+			for (int j = 0; j < 14; j++) { // 0~13
+
+				myCount = 0;
+				emptyCount = 0;
+
+				for (int k = 0; k < 6; k++) { // 13~18, 본인부터 본인+5, 왼쪽아래로 내려가니까 좌대각 \
+					if (playBoard[i + k][j + k] == color)
+						myCount++;
+					else if (playBoard[i + k][j + k] == 0)
+						emptyCount++;
+				}
+
+				// 칠목방지, 인덱스범위
+				if (((i - 1 < 0 || j - 1 < 0) || playBoard[i - 1][j - 1] == color)
+						|| ((i + 6 > 18 || j + 6 > 18) || playBoard[i + 6][j + 6] == color))
+					continue;
+
+				if (myCount + emptyCount == 6) {
+					for (int k = 0; k < 6; k++) { // 빈칸에 가중치 쏴주고 리턴
+						if (playBoard[i + k][j + k] == 0) {
+							if (myCount >= 4) {
+								superWeight[i + k][j + k] += 500;
+								return;
+							} else if (myCount == 3) {
+								superWeight[i + k][j + k] += 100;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		// 우대각 공격 시작점
+		// ----------------------------------------------------------------------
+		for (int i = 5; i < 19; i++) { // 5~18
+			for (int j = 0; j < 14; j++) { // 0~13
+
+				myCount = 0;
+				emptyCount = 0;
+
+				for (int k = 0; k < 6; k++) { // 13~18, 본인부터...오른쪽아래로 내려가니까 우대각 /
+					if (playBoard[i - k][j + k] == color)
+						myCount++;
+					else if (playBoard[i - k][j + k] == 0)
+						emptyCount++;
+				}
+
+				// 칠목방지 + 인덱스범위
+				if (((i + 1 > 18 || j - 1 < 0) || playBoard[i + 1][j - 1] == color)
+						|| ((i - 6 < 0 || j + 6 > 18) || playBoard[i - 6][j + 6] == color))
+					continue;
+
+				if (myCount + emptyCount == 6) {
+					for (int k = 0; k < 6; k++) { // 빈칸에 가중치 쏴주고 리턴
+						if (playBoard[i - k][j + k] == 0) {
+							if (myCount >= 4) {
+								superWeight[i - k][j + k] += 500;
+								return;
+							} else if (myCount == 3) {
+								superWeight[i - k][j + k] += 100;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		//// 안놓으면 질 때, 한방방어
+		//// ----------------------------------------------------------------------------------
+
+		// 가로 방어 시작점 ------------------------------------------------------
+
+		for (int i = 0; i < 14; i++) { // 14넘으면 여섯개 범위 잡을 때 어차피 인덱스 에러 나니깐...
+			for (int j = 0; j < 19; j++) {
+				myCount = 0;
+				check = 0;
+				// 본인기준 여섯개 체크
+				for (int k = 0; k < 6; k++) {
+					try {
+						// 상대 돌의 연속점? 세는거같은데 중간에 자기 색이 나오면 세던거 엎어버림.
+						if (playBoard[i + k][j] == opponent) {
+							myCount++;
+						} else if (playBoard[i + k][j] == color) {
+							myCount = 0;
+							break;
+						}
+						// 비어있는부분 만나면 체크를.. 그 비어있는곳 앞에 몇개의 상대돌이 연속되어있는지 저장해주는건가봐.
+						else if (playBoard[i + k][j] == 0) {
+							if (check == 0 && myCount != 0)
+								check = myCount;
+						}
+
+					} catch (ArrayIndexOutOfBoundsException e) {
+						System.out.println("index error " + i + " " + j);
+					}
+				}
+
+				// System.out.println("가로 방어로 진입." + i+" : "+j);
+
+				if (myCount == 5) {
+					try {
+						// 연속
+						if (check == 5) {
+							if (playBoard[i][j] == 0 && playBoard[i - 1][j] != opponent) {
+								if (playBoard[i + 6][j] == 0) {
+									superWeight[i][j] += 500;
+									superWeight[i + 6][j] += 500;
+									return;
+								} else if (playBoard[i + 6][j] == color) {
+									superWeight[i][j] += 500;
+									return;
+								}
+							} else if (playBoard[i + 5][j] == 0 && playBoard[i - 6][j] != opponent) {
+								if (playBoard[i - 1][j] == 0) {
+									superWeight[i - 1][j] += 500;
+									superWeight[i + 5][j] += 500;
+									return;
+								} else if (playBoard[i - 1][j] == color) {
+									superWeight[i + 5][j] += 500;
+									return;
+								}
+							}
+						}
+
+						// 중간에 공백 있음
+						else if (playBoard[i - 1][j] != opponent && playBoard[i + 6][j] != opponent) {
+							for (int k = 0; k < 6; k++) {
+								if (playBoard[i + k][j] == 0) {
+									superWeight[i + k][j] += 500;
+									return;
+								}
+							}
+						}
+
+					} catch (ArrayIndexOutOfBoundsException e) {
+						System.out.println("index error " + i + " " + j);
+					}
+				}
+
+				// 4연
+				else if (myCount == 4) {
+					try {
+
+						if (check == 4) {
+							for (int k = 0; k < 6; k++) {
+								// 4개 연속
+								if (playBoard[i][j + k] == opponent) {
+									if (playBoard[i + k - 1][j] == 0 && playBoard[i + k + 4][j] == 0) {
+										superWeight[i + k - 1][j] += 500;
+										superWeight[i + k + 4][j] += 500;
+										return;
+									} else if (playBoard[i - 1][j] == color && playBoard[i + k + 4][j] == 0) {
+										superWeight[i + k + 4][j] += 500;
+										return;
+									} else if (playBoard[i + 4][j] == color && playBoard[i + k - 1][j] == 0) {
+										superWeight[i + k - 1][j] += 500;
+										return;
+									}
+									break;
+								}
+							}
+						}
+
+						else if (check == 3) {
+							for (int k = 0; k < 6; k++) {
+								// 3연속 1 공백 1
+								if (playBoard[i + k][j] == opponent && playBoard[i + k + 4][j] == opponent) {
+									if (playBoard[i + k - 1][j] == 0 && playBoard[i + k + 5][j] == 0) {
+										superWeight[i + k - 1][j] += 500;
+										superWeight[i + k + 5][j] += 500;
+										return;
+									} else if (k == 0 && playBoard[i + k - 1][j] == color) {
+										superWeight[i + k + 5][j] += 500;
+										return;
+									} else if (k == 1 && playBoard[i + k + 5][j] == color) {
+										superWeight[i + k - 1][j] += 500;
+										return;
+									}
+									break;
+								}
+								// 3연속 2공백 1
+								else if (playBoard[i + k][j] == opponent && playBoard[i + k + 3][j] == 0
+										&& playBoard[i + k + 4][j] == 0) {
+									if (weight[i + k + 3][j] > weight[i + k + 4][j]) {
+										superWeight[i + k + 3][j] += 500;
+									} else {
+										superWeight[i + k + 4][j] += 500;
+									}
+									return;
+								}
+							}
+						}
+
+						else if (check == 2) {
+							for (int k = 0; k < 6; k++) {
+								if (playBoard[i][j + k] == opponent) {
+									// 2연속 1공백 2
+									if (playBoard[i + k - 1][j] == 0 && playBoard[i + k + 5][j] == 0) {
+										superWeight[i + k - 1][j] += 500;
+										superWeight[i + k + 5][j] += 500;
+										return;
+									} else if (k == 0 && playBoard[i + k - 1][j] == color) {
+										superWeight[i + k + 5][j] += 500;
+										return;
+									} else if (k == 1 && playBoard[i + k + 5][j] == color) {
+										superWeight[i + k - 1][j] += 500;
+										return;
+									}
+									// 2연속 2공백 2
+									else if (playBoard[i + k + 2][j] == 0 && playBoard[i + k + 3][j] == 0) {
+										if (weight[i + k + 2][j] > weight[i + k + 3][j]) {
+											superWeight[i + k + 2][j] += 500;
+										} else {
+											superWeight[i + k + 3][j] += 500;
+										}
+										return;
+									}
+									break;
+								}
+							}
+						}
+
+						else if (check == 1) {
+							for (int k = 0; k < 6; k++) {
+								// 1 1공백 3연속
+								if (playBoard[i + k][j] == opponent && playBoard[i + k + 2][j] == opponent) {
+									if (playBoard[i + k - 1][j] == 0 && playBoard[i + k + 5][j] == 0) {
+										superWeight[i + k - 1][j] += 500;
+										superWeight[i + k + 5][j] += 500;
+										return;
+									} else if (k == 0 && playBoard[i + k - 1][j] == color) {
+										superWeight[i + k + 5][j] += 500;
+										return;
+									} else if (k == 1 && playBoard[i + k + 5][j] == color) {
+										superWeight[i + k - 1][j] += 500;
+										return;
+									}
+									break;
+								}
+								// 1 2공백 3연속
+								else if (playBoard[i + k][j] == opponent) {
+									if (weight[i + k + 1][j] > weight[i + k + 2][j]) {
+										superWeight[i + k + 1][j] += 500;
+									} else {
+										superWeight[i + k + 2][j] += 500;
+									}
+									return;
+								}
+							}
+						}
+
+					} catch (ArrayIndexOutOfBoundsException e) {
+						System.out.println("index error " + i + " " + j);
+					}
+				} else if (myCount == 3) {
+					for (int k = 0; k < 6; k++) {
+						if (playBoard[i + k][j] == 0)
+							superWeight[i + k][j] += 100;
+					}
+				}
+
+			}
+		}
+
+		// 세로 방어 시작점 ------------------------------------------------------
+
+		for (int i = 0; i < 19; i++) {
+			for (int j = 0; j < 14; j++) { // 14넘으면 여섯개 범위 잡을 때 어차피 인덱스 에러 나니깐...
+				myCount = 0;
+				check = 0;
+				// 본인기준 여섯개 체크
+				for (int k = 0; k < 6; k++) {
+					try {
+						// 상대 돌의 연속점? 세는거같은데 중간에 자기 색이 나오면 세던거 엎어버림.
+						if (playBoard[i][j + k] == opponent) {
+							myCount++;
+						} else if (playBoard[i][j + k] == color) {
+							myCount = 0;
+							break;
+						}
+						// 비어있는부분 만나면 체크를.. 그 비어있는곳 앞에 몇개의 상대돌이 연속되어있는지 저장해주는건가봐.
+						else if (playBoard[i][j + k] == 0) {
+							if (check == 0 && myCount != 0)
+								check = myCount;
+						}
+
+					} catch (ArrayIndexOutOfBoundsException e) {
+						System.out.println("index error " + i + " " + j);
+					}
+				}
+
+				if (myCount == 5) {
+					try {
+						// 연속
+						if (check == 5) {
+							if (playBoard[i][j] == 0 && playBoard[i][j - 1] != opponent) {
+								if (playBoard[i][j + 6] == 0) {
+									superWeight[i][j] += 500;
+									superWeight[i][j + 6] += 500;
+									return;
+								} else if (playBoard[i][j + 6] == color) {
+									superWeight[i][j] += 500;
+									return;
+								}
+							} else if (playBoard[i][j + 5] == 0 && playBoard[i][j - 6] != opponent) {
+								if (playBoard[i][j - 1] == 0) {
+									superWeight[i][j - 1] += 500;
+									superWeight[i][j + 5] += 500;
+									return;
+								} else if (playBoard[i][j - 1] == color) {
+									superWeight[i][j + 5] += 500;
+									return;
+								}
+							}
+						}
+
+						// 중간에 공백 있음
+						else if (playBoard[i][j - 1] != opponent && playBoard[i][j + 6] != opponent) {
+							for (int k = 0; k < 6; k++) {
+								if (playBoard[i][j + k] == 0) {
+									superWeight[i][j + k] += 500;
+									return;
+								}
+							}
+						}
+
+					} catch (ArrayIndexOutOfBoundsException e) {
+						System.out.println("index error " + i + " " + j);
+					}
+				}
+
+				// 4연
+				else if (myCount == 4) {
+					try {
+
+						if (check == 4) {
+							for (int k = 0; k < 6; k++) {
+								// 4개 연속
+								if (playBoard[i][j + k] == opponent) {
+									if (playBoard[i][j + k - 1] == 0 && playBoard[i][j + k + 4] == 0) {
+										superWeight[i][j + k - 1] += 500;
+										superWeight[i][j + k + 4] += 500;
+										return;
+									} else if (playBoard[i][j - 1] == color && playBoard[i][j + k + 4] == 0) {
+										superWeight[i][j + k + 4] += 500;
+										return;
+									} else if (playBoard[i][j + 4] == color && playBoard[i][j + k - 1] == 0) {
+										superWeight[i][j + k - 1] += 500;
+										return;
+									}
+									break;
+								}
+							}
+						}
+
+						else if (check == 3) {
+							for (int k = 0; k < 6; k++) {
+								// 3연속 1 공백 1
+								if (playBoard[i][j + k] == opponent && playBoard[i][j + k + 4] == opponent) {
+									if (playBoard[i][j + k - 1] == 0 && playBoard[i][j + k + 5] == 0) {
+										superWeight[i][j + k - 1] += 500;
+										superWeight[i][j + k + 5] += 500;
+										return;
+									} else if (k == 0 && playBoard[i][j + k - 1] == color) {
+										superWeight[i][j + k + 5] += 500;
+										return;
+									} else if (k == 1 && playBoard[i][j + k + 5] == color) {
+										superWeight[i][j + k - 1] += 500;
+										return;
+									}
+									break;
+								}
+								// 3연속 2공백 1
+								else if (playBoard[i][j + k] == opponent && playBoard[i][j + k + 3] == 0
+										&& playBoard[i][j + k + 4] == 0) {
+									if (weight[i][j + k + 3] > weight[i][j + k + 4]) {
+										superWeight[i][j + k + 3] += 500;
+									} else {
+										superWeight[i][j + k + 4] += 500;
+									}
+									return;
+								}
+							}
+						}
+
+						else if (check == 2) {
+							for (int k = 0; k < 6; k++) {
+								if (playBoard[i][j + k] == opponent) {
+									// 2연속 1공백 2
+									if (playBoard[i][j + k - 1] == 0 && playBoard[i][j + k + 5] == 0) {
+										superWeight[i][j + k - 1] += 500;
+										superWeight[i][j + k + 5] += 500;
+										return;
+									} else if (k == 0 && playBoard[i][j + k - 1] == color) {
+										superWeight[i][j + k + 5] += 500;
+										return;
+									} else if (k == 1 && playBoard[i][j + k + 5] == color) {
+										superWeight[i][j + k - 1] += 500;
+										return;
+									}
+									// 2연속 2공백 2
+									else if (playBoard[i][j + k + 2] == 0 && playBoard[i][j + k + 3] == 0) {
+										if (weight[i][j + k + 2] > weight[i][j + k + 3]) {
+											superWeight[i][j + k + 2] += 500;
+										} else {
+											superWeight[i][j + k + 3] += 500;
+										}
+										return;
+									}
+									break;
+								}
+							}
+						}
+
+						else if (check == 1) {
+							for (int k = 0; k < 6; k++) {
+								// 1 1공백 3연속
+								if (playBoard[i][j + k] == opponent && playBoard[i][j + k + 2] == opponent) {
+									if (playBoard[i][j + k - 1] == 0 && playBoard[i][j + k + 5] == 0) {
+										superWeight[i][j + k - 1] += 500;
+										superWeight[i][j + k + 5] += 500;
+										return;
+									} else if (k == 0 && playBoard[i][j + k - 1] == color) {
+										superWeight[i][j + k + 5] += 500;
+										return;
+									} else if (k == 1 && playBoard[i][j + k + 5] == color) {
+										superWeight[i][j + k - 1] += 500;
+										return;
+									}
+									break;
+								}
+								// 1 2공백 3연속
+								else if (playBoard[i][j + k] == opponent) {
+									if (weight[i][j + k + 1] > weight[i][j + k + 2]) {
+										superWeight[i][j + k + 1] += 500;
+									} else {
+										superWeight[i][j + k + 2] += 500;
+									}
+									return;
+								}
+							}
+						}
+
+					} catch (ArrayIndexOutOfBoundsException e) {
+						System.out.println("index error " + i + " " + j);
+					}
+				} else if (myCount == 3) {
+					for (int k = 0; k < 6; k++) {
+						if (playBoard[i][j + k] == 0)
+							superWeight[i][j + k] += 100;
+					}
+				}
+
+			}
+		}
+
+		// 좌대각)\) 방어 시작점
+		// ------------------------------------------------------------------------
+
+		for (int i = 0; i < 14; i++) {
+			for (int j = 0; j < 14; j++) {
+				myCount = 0;
+				check = 0;
+				for (int k = 0; k < 6; k++) {
+					try {
+						if (playBoard[i + k][j + k] == opponent) {
+							myCount++;
+						} else if (playBoard[i + k][j + k] == color) {
+							myCount = 0;
+							break;
+						} else if (playBoard[i + k][j + k] == 0) {
+							if (check == 0 && myCount != 0)
+								check = myCount;
+						}
+
+					} catch (ArrayIndexOutOfBoundsException e) {
+						System.out.println("index error " + i + " " + j);
+					}
+				}
+				// 5 왼쪽 위에서 오른쪽 아래(좌대각\) 방어
+				if (myCount == 5) {
+					try {
+						// 연속
+						if (check == 5) {
+							try {
+								if (playBoard[i][j] == 0 && playBoard[i - 1][j - 1] != opponent) {
+									if (playBoard[i + 6][j + 6] == 0) {
+										superWeight[i][j] += 500;
+										superWeight[i + 6][j + 6] += 500;
+										return;
+									} else if (playBoard[i + 6][j + 6] == color) {
+										superWeight[i][j] += 500;
+										return;
+									}
+								} else if (playBoard[i + 5][j + 5] == 0 && playBoard[i - 6][j - 6] != opponent) {
+									if (playBoard[i - 1][j - 1] == 0) {
+										superWeight[i - 1][j - 1] += 500;
+										superWeight[i + 5][j + 5] += 500;
+										return;
+									} else if (playBoard[i - 1][j - 1] == color) {
+										superWeight[i + 5][j + 5] += 500;
+										return;
+									}
+								}
+							} catch (ArrayIndexOutOfBoundsException e) {
+								System.out.println("index error " + i + " " + j);
+							}
+						}
+						// 중간에 공백 있음
+						else if (playBoard[i - 1][j - 1] != opponent && playBoard[i + 6][j + 6] != opponent) {
+							for (int k = 0; k < 6; k++) {
+								if (playBoard[i + k][j + k] == 0) {
+									superWeight[i + k][j + k] += 500;
+									return;
+								}
+							}
+						}
+					} catch (ArrayIndexOutOfBoundsException e) {
+						System.out.println("index error " + i + " " + j);
+					}
+				} else if (myCount == 4) {
+					if (check == 4) {
+						for (int k = 0; k < 6; k++) {
+							try {
+								// 4개 연속
+								if (playBoard[i + k][j + k] == opponent) {
+									if (playBoard[i + k - 1][j + k - 1] == 0 && playBoard[i + k + 4][j + k + 4] == 0) {
+										superWeight[i + k - 1][j + k - 1] += 500;
+										superWeight[i + k + 4][j + k + 4] += 500;
+										return;
+									} else if (playBoard[i - 1][j - 1] == color
+											&& playBoard[i + k + 4][j + k + 4] == 0) {
+										superWeight[i + k + 4][j + k + 4] += 500;
+										return;
+									} else if (playBoard[i + 4][j + 4] == color
+											&& playBoard[i + k - 1][j + k - 1] == 0) {
+										superWeight[i + k - 1][j + k - 1] += 500;
+										return;
+									}
+								}
+							} catch (ArrayIndexOutOfBoundsException e) {
+								System.out.println("index error " + i + " " + j);
+							}
+						}
+					} else if (check == 3) {
+						for (int k = 0; k < 6; k++) {
+							try {
+								// 3연속 1 공백 1
+								if (playBoard[i + k][j + k] == opponent
+										&& playBoard[i + k + 4][j + k + 4] == opponent) {
+									if (playBoard[i + k - 1][j + k - 1] == 0 && playBoard[i + k + 5][j + k + 5] == 0) {
+										superWeight[i + k - 1][j + k - 1] += 500;
+										superWeight[i + k + 5][j + k + 5] += 500;
+										return;
+									} else if (k == 0 && playBoard[i + k - 1][j + k - 1] == color) {
+										superWeight[i + k + 5][j + k + 5] += 500;
+										return;
+									} else if (k == 1 && playBoard[i + k + 5][j + k + 5] == color) {
+										superWeight[i + k - 1][j + k - 1] += 500;
+										return;
+									}
+								}
+								// 3연속 2공백 1
+								else if (playBoard[i + k][j + k] == opponent && playBoard[i + k + 3][j + k + 3] == 0
+										&& playBoard[i + k + 4][j + k + 4] == 0) {
+									if (weight[i + k + 3][j + k + 3] > weight[i + k + 4][j + k + 4]) {
+										superWeight[i + k + 3][j + k + 3] += 500;
+									} else {
+										superWeight[i + k + 4][j + k + 4] += 500;
+									}
+									return;
+								}
+							} catch (ArrayIndexOutOfBoundsException e) {
+								System.out.println("index error " + i + " " + j);
+							}
+						}
+					} else if (check == 2) {
+						for (int k = 0; k < 6; k++) {
+							try {
+								if (playBoard[i + k][j + k] == opponent) {
+									// 2연속 1공백 2
+									if (playBoard[i + k - 1][j + k - 1] == 0 && playBoard[i + k + 5][j + k + 5] == 0) {
+										superWeight[i + k - 1][j + k - 1] += 500;
+										superWeight[i + k + 5][j + k + 5] += 500;
+										return;
+									} else if (k == 0 && playBoard[i + k - 1][j + k - 1] == color) {
+										superWeight[i + k + 5][j + k + 5] += 500;
+										return;
+									} else if (k == 1 && playBoard[i + k + 5][j + k + 5] == color) {
+										superWeight[i + k - 1][j + k - 1] += 500;
+										return;
+									}
+									// 2연속 2공백 2
+									else if (playBoard[i + k + 2][j + k + 2] == 0
+											&& playBoard[i + k + 3][j + k + 3] == 0) {
+										if (weight[i + k + 2][j + k + 2] > weight[i + k + 3][j + k + 3]) {
+											superWeight[i + k + 2][j + k + 2] += 500;
+										} else {
+											superWeight[i + k + 3][j + k + 3] += 500;
+										}
+										return;
+									}
+								}
+							} catch (ArrayIndexOutOfBoundsException e) {
+								System.out.println("index error " + i + " " + j);
+							}
+						}
+					} else if (check == 1) {
+						for (int k = 0; k < 6; k++) {
+							try {
+								// 1 1공백 3연속
+								if (playBoard[i + k][j + k] == opponent
+										&& playBoard[i + k + 2][j + k + 2] == opponent) {
+									if (playBoard[i + k - 1][j + k - 1] == 0 && playBoard[i + k + 5][j + k + 5] == 0) {
+										superWeight[i + k - 1][j + k - 1] += 500;
+										superWeight[i + k + 5][j + k + 5] += 500;
+										return;
+									} else if (k == 0 && playBoard[i + k - 1][j + k - 1] == color) {
+										superWeight[i + k + 5][j + k + 5] += 500;
+										return;
+									} else if (k == 1 && playBoard[i + k + 5][j + k + 5] == color) {
+										superWeight[i + k - 1][j + k - 1] += 500;
+										return;
+									}
+								}
+								// 1 2공백 3연속
+								else if (playBoard[i + k][j + k] == opponent) {
+									if (weight[i + k + 1][j + k + 1] > weight[i + k + 2][j + k + 2]) {
+										superWeight[i + k + 1][j + k + 1] += 500;
+									} else {
+										superWeight[i + k + 2][j + k + 2] += 500;
+									}
+									return;
+								}
+							} catch (ArrayIndexOutOfBoundsException e) {
+								System.out.println("index error " + i + " " + j);
+							}
+						}
+					}
+				} else if (myCount == 3) {
+					for (int k = 0; k < 6; k++) {
+						if (playBoard[i + k][j + k] == 0) {
+							superWeight[i + k][j + k] += 100;
+						}
+					}
+				}
+			}
+		}
+
+		// 우대각 방어 시작점
+		// -------------------------------------------------------------------------------
+
+		for (int j = 0; j < 14; j++) {
+			for (int i = 5; i < 19; i++) {
+				myCount = 0;
+				check = 0;
+				for (int k = 0; k < 6; k++) {
+					try {
+						if (playBoard[i - k][j + k] == opponent) {
+							myCount++;
+						} else if (playBoard[i - k][j + k] == color) {
+							myCount = 0;
+							break;
+						} else if (playBoard[i - k][j + k] == 0) {
+							if (check == 0 && myCount != 0)
+								check = myCount;
+						}
+
+					} catch (ArrayIndexOutOfBoundsException e) {
+						System.out.println("index error " + i + " " + j);
+					}
+				}
+				if (myCount == 5) {
+					try {
+						// 5개 연속
+						if (check == 5) {
+							try {
+								if (playBoard[i][j] == 0 && playBoard[i + 1][j - 1] != opponent) {
+									if (playBoard[i - 6][j + 6] == 0) {
+										superWeight[i][j] += 500;
+										superWeight[i - 6][j + 6] += 500;
+										return;
+									} else if (playBoard[i - 6][j + 6] == color) {
+										superWeight[i][j] += 500;
+										return;
+									}
+								} else if (playBoard[i - 5][j + 5] == 0 && playBoard[i - 6][j + 6] != opponent) {
+									if (playBoard[i - 1][j + 1] == 0) {
+										superWeight[i - 1][j + 1] += 500;
+										superWeight[i - 5][j + 5] += 500;
+										return;
+									} else if (playBoard[i + 1][j - 1] == color) {
+										superWeight[i - 5][j + 5] += 500;
+										return;
+									}
+								}
+							} catch (ArrayIndexOutOfBoundsException e) {
+								System.out.println("index error " + i + " " + j);
+							}
+						}
+						// 중간에 공백 있음
+						else if (playBoard[i + 1][j - 1] != opponent && playBoard[i - 6][j + 6] != opponent) {
+							for (int k = 0; k < 6; k++) {
+								if (playBoard[i - k][j + k] == 0) {
+									superWeight[i - k][j + k] += 500;
+									return;
+								}
+							}
+						}
+					} catch (ArrayIndexOutOfBoundsException e) {
+						System.out.println("index error " + i + " " + j);
+					}
+				} else if (myCount == 4) {
+					if (check == 4) {
+						for (int k = 0; k < 6; k++) {
+							try {
+								// 4개 연속
+								if (playBoard[i - k][j + k] == opponent) {
+									if (playBoard[i - k + 1][j + k - 1] == 0 && playBoard[i - k - 4][j + k + 4] == 0) {
+										superWeight[i - k + 1][j + k - 1] += 500;
+										superWeight[i - k - 4][j + k + 4] += 500;
+										return;
+									} else if (playBoard[i + 1][j - 1] == color
+											&& playBoard[i - k - 4][j + k + 4] == 0) {
+										superWeight[i - k - 4][j + k + 4] += 500;
+										return;
+									} else if (playBoard[i - 4][j + 4] == color
+											&& playBoard[i - k + 1][j + k - 1] == 0) {
+										superWeight[i - k + 1][j + k - 1] += 500;
+										return;
+									}
+								}
+							} catch (ArrayIndexOutOfBoundsException e) {
+								System.out.println("index error " + i + " " + j);
+							}
+						}
+					} else if (check == 3) {
+						for (int k = 0; k < 6; k++) {
+							try {
+								// 3연속 1 공백 1
+								if (playBoard[i - k][j + k] == opponent
+										&& playBoard[i - k - 4][j + k + 4] == opponent) {
+									if (playBoard[i - k + 1][j + k - 1] == 0 && playBoard[i - k - 5][j + k + 5] == 0) {
+										superWeight[i - k + 1][j + k - 1] += 500;
+										superWeight[i - k - 5][j + k + 5] += 500;
+										return;
+									} else if (k == 0 && playBoard[i - k + 1][j + k - 1] == color) {
+										superWeight[i - k - 5][j + k + 5] += 500;
+										return;
+									} else if (k == 1 && playBoard[i - k - 5][j + k + 5] == color) {
+										superWeight[i - k + 1][j + k - 1] += 500;
+										return;
+									}
+								}
+								// 3연속 2공백 1
+								else if (playBoard[i - k][j + k] == opponent && playBoard[i - k - 3][j + k + 3] == 0
+										&& playBoard[i - k - 4][j + k + 4] == 0) {
+									if (weight[i - k - 3][j + k + 3] > weight[i - k - 4][j + k + 4]) {
+										superWeight[i - k - 3][j + k + 3] += 500;
+									} else {
+										superWeight[i - k - 4][j + k + 4] += 500;
+									}
+									return;
+								}
+							} catch (ArrayIndexOutOfBoundsException e) {
+								System.out.println("index error " + i + " " + j);
+							}
+						}
+					} else if (check == 2) {
+						for (int k = 0; k < 6; k++) {
+							try {
+								if (playBoard[i - k][j + k] == opponent) {
+									// 2연속 1공백 2
+									if (playBoard[i - k + 1][j + k - 1] == 0 && playBoard[i - k - 5][j + k + 5] == 0) {
+										superWeight[i - k + 1][j + k - 1] += 500;
+										superWeight[i - k - 5][j + k + 5] += 500;
+										return;
+									} else if (k == 0 && playBoard[i - k + 1][j + k - 1] == color) {
+										superWeight[i - k - 5][j + k + 5] += 500;
+										return;
+									} else if (k == 1 && playBoard[i - k - 5][j + k + 5] == color) {
+										superWeight[i - k + 1][j + k - 1] += 500;
+										return;
+									}
+									// 2연속 2공백 2
+									else if (playBoard[i - k - 2][j + k + 2] == 0
+											&& playBoard[i - k - 3][j + k + 3] == 0) {
+										if (weight[i - k - 2][j + k + 2] > weight[i - k - 3][j + k + 3]) {
+											superWeight[i - k - 2][j + k + 2] += 500;
+										} else {
+											superWeight[i - k + 3][j - k + 3] += 500;
+										}
+										return;
+									}
+								}
+							} catch (ArrayIndexOutOfBoundsException e) {
+								System.out.println("index error " + i + " " + j);
+							}
+						}
+					} else if (check == 1) {
+						for (int k = 0; k < 6; k++) {
+							try {
+								// 1 1공백 3연속
+								if (playBoard[i - k][j + k] == opponent
+										&& playBoard[i - k - 2][j + k + 2] == opponent) {
+									if (playBoard[i - k + 1][j + k - 1] == 0 && playBoard[i - k - 5][j + k + 5] == 0) {
+										superWeight[i - k + 1][j + k - 1] += 500;
+										superWeight[i - k - 5][j + k + 5] += 500;
+										return;
+									} else if (k == 0 && playBoard[i - k + 1][j + k - 1] == color) {
+										superWeight[i - k - 5][j + k + 5] += 500;
+										return;
+									} else if (k == 1 && playBoard[i - k - 5][j + k + 5] == color) {
+										superWeight[i - k + 1][j + k - 1] += 500;
+										return;
+									}
+								}
+								// 1 2공백 3연속
+								else if (playBoard[i - k][j + k] == opponent) {
+									if (weight[i - k - 1][j + k + 1] > weight[i - k - 2][j + k + 2]) {
+										superWeight[i - k - 1][j + k + 1] += 500;
+									} else {
+										superWeight[i - k - 2][j + k + 2] += 500;
+									}
+									return;
+								}
+							} catch (ArrayIndexOutOfBoundsException e) {
+								System.out.println("index error " + i + " " + j);
+							}
+						}
+					}
+				} else if (myCount == 3) {
+					for (int k = 0; k < 6; k++) {
+						if (playBoard[i - k][j + k] == 0)
+							superWeight[i - k][j + k] += 100;
+					}
+				}
+			}
+		}
+		addDefaultWeight();
 	}
-	
-	
-	
-  // 현재 산출된 이상적 좌표
-  static int x;
-  static int y;
-  // 가중치 설정을 위한 배열
-  static int[][] weight = new int[19][19]; // 일반가중치(계속 누적)
-  static int[][] superWeight = new int[19][19]; // 특수가중치(매 분석마다 리셋후 시작)
-  
-  // 판 읽고 특수가중치 누적하기
-  private static void addSuperWeight() {
 
-      // 특수가중치 판 초기화
-      for (int i = 0; i < 19; i++) {
-          for (int j = 0; j < 19; j++) {
-              superWeight[i][j] = 0;
-          }
-      }
-
-      int myCount = 0, yourCount = 0, emptyCount = 0, check;
-
-      //// 놓으면 이길 때(한방승리)
-      //-------------------------------------------------------------------------------------
-
-
-      for(int i = 0; i < 19; i++) { //0~18
-          for(int j = 0; j < 14; j++) { //0~12
-             
-             myCount = 0;
-             emptyCount = 0;
-             
-            for(int k = 0; k < 6; k++) { //13~18
-                  if(playBoard[i][j+k] == color) myCount++;
-                  else if(playBoard[i][j+k] == 0) emptyCount++;
-            }
-     
-            
-            //칠목방지 
-            if((j - 1 < 0 || playBoard[i][j - 1] == color) || (j + 6 > 18 || playBoard[i][j + 6] == color)) continue;
-            
-            if(myCount + emptyCount == 6) {
-               for(int k = 0; k < 6; k++) { //13~18
-                  
-                   if(playBoard[i][j+k] == 0) {
-                      if(myCount >= 4) {
-                         superWeight[i][j+k] += 500;
-                         return;
-                      }else if(myCount == 3) {
-                         superWeight[i][j+k] += 100;
-                      }
-                   }
-               }
-            }
-             
-          }
-        }
-
-       
-        // 가로 공격 시작점 -------------------------------------------------------------------------------------------------
-        for(int j = 0; j < 19; j++) {
-         for(int i = 0; i < 14; i++) {
-            
-            myCount = 0;
-            emptyCount = 0;
-            
-            for(int k = 0; k < 6; k++) {
-               if(playBoard[i+k][j] == color) myCount++;
-               else if(playBoard[i+k][j] == 0) emptyCount++;
-            }
-            
-           //7mok nono 
-           if ((i - 1 < 0 || playBoard[i - 1][j] == color) || (i + 6 > 18 || playBoard[i + 6][j] == color)) continue;
-              
-           if(myCount + emptyCount == 6) {
-              for(int k = 0; k < 6; k++) { //13~18
-                     if(playBoard[i+k][j] == 0) {
-                       if(myCount >= 4) {
-                          superWeight[i+k][j] += 500;
-                          return;
-                       }else if(myCount == 3) {
-                          superWeight[i+k][j] += 100;
-                       }
-                     }
-              }
-           }
-           
-         }
-        }
-       
-
-      
-   // 좌대각 공격 시작점 ----------------------------------------------------------------------
-      for(int i = 0; i < 14; i++) { //0~13
-       for(int j = 0; j < 14; j++) { //0~13
-           
-           myCount = 0;
-           emptyCount = 0;
-           
-           for(int k = 0; k < 6; k++) { //13~18, 본인부터 본인+5, 왼쪽아래로 내려가니까 좌대각 \
-               if(playBoard[i+k][j+k] == color) myCount++;
-               else if(playBoard[i+k][j+k] == 0) emptyCount++;
-           }
-
-           //칠목방지, 인덱스범위 
-           if(((i-1 < 0 || j-1 < 0) || playBoard[i-1][j - 1] == color) || ((i+6 > 18 || j+6 > 18) || playBoard[i+6][j+6] == color)) continue;
-           
-           if(myCount + emptyCount == 6) {
-               for(int k = 0; k < 6; k++) { //빈칸에 가중치 쏴주고 리턴 
-                   if(playBoard[i+k][j+k] == 0) {
-                	   if(myCount >= 4) {
-                		   superWeight[i+k][j+k] += 500;
-                           return;
-                	   }else if(myCount == 3) {
-                		   superWeight[i+k][j+k] += 100;
-                	   }
-                   }
-               }
-           }
-       }
-   }
-
-   
-   // 우대각 공격 시작점 ----------------------------------------------------------------------
-   for(int i = 5; i < 19; i++) { //5~18
-       for(int j = 0; j < 14; j++) { //0~13
-           
-           myCount = 0;
-           emptyCount = 0;
-           
-           for(int k = 0; k < 6; k++) { //13~18, 본인부터...오른쪽아래로 내려가니까 우대각 /
-               if(playBoard[i-k][j+k] == color) myCount++;
-               else if(playBoard[i-k][j+k] == 0) emptyCount++;
-           }
-
-           //칠목방지 + 인덱스범위 
-           if(((i+1 >18 || j-1 < 0) || playBoard[i+1][j - 1] == color) || ((i-6 < 0 || j+6 > 18) || playBoard[i-6][j+6] == color)) continue; 
-               
-           if(myCount + emptyCount == 6) {
-        	   for(int k = 0; k < 6; k++) { //빈칸에 가중치 쏴주고 리턴
-                   if(playBoard[i-k][j+k] == 0){
-                	   if(myCount >= 4) {
-                		   superWeight[i-k][j+k] += 500;
-                           return;
-                	   }else if(myCount == 3) {
-                		   superWeight[i-k][j+k] += 100;
-                	   }
-                   } 
-               }
-           }
-       }
-   }
-
-       
-      //// 안놓으면 질 때, 한방방어
-      //// ----------------------------------------------------------------------------------
-       
-  
-       
-      //가로 방어 시작점 ------------------------------------------------------
-
-      
-      for (int i = 0; i < 14; i++) { //14넘으면 여섯개 범위 잡을 때 어차피 인덱스 에러 나니깐...
-          for (int j = 0; j < 19; j++) { 
-              myCount = 0;
-              check = 0;
-              //본인기준 여섯개 체크 
-              for (int k = 0; k < 6; k++) {
-                  try {
-                      //상대 돌의 연속점? 세는거같은데 중간에 자기 색이 나오면 세던거 엎어버림. 
-                      if (playBoard[i + k][j] == opponent) {
-                          myCount++;
-                      }
-                      else if(playBoard[i + k][j] == color) {
-                          myCount = 0;
-                          break;
-                      }
-                      //비어있는부분 만나면 체크를.. 그 비어있는곳 앞에 몇개의 상대돌이 연속되어있는지 저장해주는건가봐. 
-                      else if(playBoard[i + k][j] == 0) {
-                          if(check == 0 &&  myCount != 0)
-                              check = myCount;
-                      }
-                      
-                  } catch (ArrayIndexOutOfBoundsException e) {
-                	  System.out.println("index error " + i + " " + j);
-                  }
-              }
-
-              
-             // System.out.println("가로 방어로 진입." + i+" : "+j);
-
-              
-              
-              
-              if(myCount == 5) {
-                  try {
-                      //연속
-                      if(check == 5) {
-                          if(playBoard[i][j] == 0 && playBoard[i - 1][j] != opponent) {
-                              if(playBoard[i + 6][j] == 0) {
-                                  superWeight[i][j] += 500;
-                                  superWeight[i + 6][j] += 500;
-                                  return;
-                              }
-                              else if(playBoard[i + 6][j] == color) {
-                                  superWeight[i][j] += 500; 
-                                  return;
-                              }
-                          }
-                          else if(playBoard[i + 5][j] == 0 && playBoard[i - 6][j] != opponent) {
-                              if(playBoard[i - 1][j] == 0) {
-                                  superWeight[i - 1][j] += 500;
-                                  superWeight[i + 5][j] += 500; 
-                                  return;
-                              }
-                              else if(playBoard[i - 1][j] == color) {
-                                  superWeight[i + 5][j] += 500; 
-                                  return;
-                              }
-                          }
-                      }
-
-
-                      //중간에 공백 있음
-                      else if(playBoard[i - 1][j] != opponent && playBoard[i + 6][j] != opponent){
-                          for(int k = 0; k < 6; k++) {
-                              if(playBoard[i + k][j] == 0) {
-                                  superWeight[i + k][j] += 500;
-                                  return;
-                              }
-                          }
-                      }
-
-
-                  }
-                  catch (ArrayIndexOutOfBoundsException e) {
-                	  System.out.println("index error " + i + " " + j);
-                  }
-              }
-
-
-              //4연
-              else if(myCount == 4) {
-                try {
-
-                    if(check == 4) {
-                        for(int k = 0; k < 6; k++) {
-                            //4개 연속
-                            if(playBoard[i ][j + k] == opponent) {
-                                if(playBoard[i + k - 1][j] == 0 && playBoard[i + k + 4][j] == 0) {
-                                    superWeight[i + k - 1][j] += 500;
-                                    superWeight[i + k + 4][j] += 500;
-                                    return;
-                                }
-                                else if(playBoard[i - 1][j] == color && playBoard[i + k + 4][j] == 0) {
-                                    superWeight[i + k + 4][j] += 500;
-                                    return;
-                                } 
-                                else if(playBoard[i + 4][j ] == color && playBoard[i + k - 1][j] == 0) {
-                                    superWeight[i + k - 1][j ] += 500;
-                                    return;
-                                }
-                                break;
-                            }
-                        }
-                    }
-
-
-                    else if(check == 3){
-                        for(int k = 0; k < 6; k++) {
-                            //3연속 1 공백 1
-                            if(playBoard[i + k][j] == opponent && playBoard[i + k + 4][j ] == opponent) {
-                                if(playBoard[i + k - 1][j ] == 0 && playBoard[i + k + 5][j ] == 0) {
-                                    superWeight[i + k - 1][j ] += 500;
-                                    superWeight[i + k + 5][j ] += 500;
-                                    return;
-                                }
-                                else if(k == 0 && playBoard[i + k - 1][j ] == color) {
-                                    superWeight[i + k + 5][j ] += 500;
-                                    return;
-                                }
-                                else if(k == 1 && playBoard[i + k + 5][j ] == color){
-                                    superWeight[i + k - 1][j ] += 500;
-                                    return;
-                                }
-                                break;
-                            }
-                            //3연속 2공백 1
-                            else if(playBoard[i + k][j] == opponent && playBoard[i + k + 3][j ] == 0 && playBoard[i + k + 4][j ] == 0) {
-                                 if (weight[i + k + 3][j] > weight[i + k + 4][j ]) {
-                                     superWeight[i + k + 3][j ] += 500;    
-                                 } else {
-                                     superWeight[i + k + 4][j ] += 500;
-                                 }
-                                 return;
-                            }
-                        }
-                    }
-
-
-                    else if(check == 2) {
-                        for(int k = 0; k < 6; k++) {
-                            if(playBoard[i ][j + k] == opponent) {
-                                //2연속 1공백 2
-                                if(playBoard[i + k - 1][j ] == 0 &&playBoard[i + k + 5][j ] == 0) {
-                                    superWeight[i + k - 1][j ] += 500;
-                                    superWeight[i + k + 5][j ] += 500;
-                                    return;
-                                }
-                                else if(k == 0 && playBoard[i + k -1][j ] == color) {
-                                    superWeight[i + k + 5][j ] += 500;
-                                    return;
-                                }
-                                else if(k == 1 && playBoard[i + k + 5][j ] == color) {
-                                    superWeight[i + k - 1][j ] += 500;
-                                    return;
-                                }
-                                //2연속 2공백 2
-                                else if(playBoard[i + k + 2][j ] == 0 && playBoard[i + k + 3][j ] == 0){
-                                    if(weight[i + k + 2][j ] > weight[i + k + 3][j ]) {
-                                        superWeight[i + k + 2][j ] += 500;
-                                    }
-                                    else {
-                                        superWeight[i + k + 3][j ] += 500;
-                                    }
-                                    return;
-                                }
-                                break;
-                            }
-                        }
-                    }
-
-
-                    else if(check == 1) {
-                        for(int k = 0; k < 6; k++) {
-                            //1 1공백 3연속
-                            if(playBoard[i + k][j ] == opponent && playBoard[i + k + 2][j ] == opponent) {
-                                if(playBoard[i + k - 1][j ] == 0 && playBoard[i + k + 5][j ] == 0) {
-                                    superWeight[i + k - 1][j ] += 500;
-                                    superWeight[i + k + 5][j ] += 500;
-                                    return;
-                                }
-                                else if(k == 0 && playBoard[i + k - 1][j ] == color) {
-                                    superWeight[i + k + 5][j ] += 500;
-                                    return;
-                                }
-                                else if(k == 1 && playBoard[i + k + 5][j ] == color) {
-                                    superWeight[i + k - 1][j ] += 500;
-                                    return;
-                                }
-                                break;
-                            }
-                            //1 2공백 3연속
-                            else if(playBoard[i + k][j ] == opponent) {
-                                if(weight[i + k + 1][j ] > weight[i + k + 2][j ]) {
-                                    superWeight[i + k + 1][j ] += 500;
-                                }else {
-                                    superWeight[i + k + 2][j ] += 500;
-                                }
-                                return;
-                            }
-                        } 
-                    } 
-                    
-                } catch (ArrayIndexOutOfBoundsException e) {
-                	 System.out.println("index error " + i + " " + j);
-                }
-              }
-              else if(myCount == 3) {
-            	  for(int k = 0; k < 6; k++) {
-            		  if(playBoard[i + k][j] == 0)
-                		  superWeight[i + k][j] += 100;
-            	  }
-              }
-
-
-          }
-      }
-
-
-      
-      
-      
-      
-      //세로 방어 시작점 ------------------------------------------------------
-
-      
-      for (int i = 0; i < 19; i++) {
-          for (int j = 0; j < 14; j++) { //14넘으면 여섯개 범위 잡을 때 어차피 인덱스 에러 나니깐...
-              myCount = 0;
-              check = 0;
-              //본인기준 여섯개 체크 
-              for (int k = 0; k < 6; k++) {
-                  try {
-                      //상대 돌의 연속점? 세는거같은데 중간에 자기 색이 나오면 세던거 엎어버림. 
-                      if (playBoard[i][j + k] == opponent) {
-                          myCount++;
-                      }
-                      else if(playBoard[i][j + k] == color) {
-                          myCount = 0;
-                          break;
-                      }
-                      //비어있는부분 만나면 체크를.. 그 비어있는곳 앞에 몇개의 상대돌이 연속되어있는지 저장해주는건가봐. 
-                      else if(playBoard[i][j + k] == 0) {
-                          if(check == 0 &&  myCount != 0)
-                              check = myCount;
-                      }
-                      
-                  } catch (ArrayIndexOutOfBoundsException e) {
-                	  System.out.println("index error " + i + " " + j);
-                  }
-              }
-
-
-           if(myCount == 5) {
-                  try {
-                      //연속
-                      if(check == 5) {
-                          if(playBoard[i][j] == 0 && playBoard[i][j - 1] != opponent) {
-                              if(playBoard[i][j + 6] == 0) {
-                                  superWeight[i][j] += 500;
-                                  superWeight[i][j + 6] += 500;
-                                  return;
-                              }
-                              else if(playBoard[i][j + 6] == color) {
-                                  superWeight[i][j] += 500; 
-                                  return;
-                              }
-                          }
-                          else if(playBoard[i][j + 5] == 0 && playBoard[i][j - 6] != opponent) {
-                              if(playBoard[i][j - 1] == 0) {
-                                  superWeight[i][j - 1] += 500;
-                                  superWeight[i][j + 5] += 500; 
-                                  return;
-                              }
-                              else if(playBoard[i][j - 1] == color) {
-                                  superWeight[i][j + 5] += 500; 
-                                  return;
-                              }
-                          }
-                      }
-
-
-                      //중간에 공백 있음
-                      else if(playBoard[i][j - 1] != opponent && playBoard[i][j + 6] != opponent){
-                          for(int k = 0; k < 6; k++) {
-                              if(playBoard[i][j + k] == 0) {
-                                  superWeight[i][j + k] += 500;
-                                  return;
-                              }
-                          }
-                      }
-
-
-                  }
-                  catch (ArrayIndexOutOfBoundsException e) { 
-                	  System.out.println("index error " + i + " " + j);
-                  }
-              }
-
-
-              //4연
-              else if(myCount == 4) {
-                try {
-
-                    if(check == 4) {
-                        for(int k = 0; k < 6; k++) {
-                            //4개 연속
-                            if(playBoard[i ][j + k] == opponent) {
-                                if(playBoard[i ][j + k - 1] == 0 && playBoard[i ][j + k + 4] == 0) {
-                                    superWeight[i ][j + k - 1] += 500;
-                                    superWeight[i ][j + k + 4] += 500;
-                                    return;
-                                }
-                                else if(playBoard[i ][j - 1] == color && playBoard[i ][j + k + 4] == 0) {
-                                    superWeight[i ][j + k + 4] += 500;
-                                    return;
-                                } 
-                                else if(playBoard[i ][j + 4] == color && playBoard[i ][j + k - 1] == 0) {
-                                    superWeight[i ][j + k - 1] += 500;
-                                    return;
-                                }
-                                break;
-                            }
-                        }
-                    }
-
-
-                    else if(check == 3){
-                        for(int k = 0; k < 6; k++) {
-                            //3연속 1 공백 1
-                            if(playBoard[i ][j + k] == opponent && playBoard[i ][j + k + 4] == opponent) {
-                                if(playBoard[i ][j + k - 1] == 0 && playBoard[i ][j + k + 5] == 0) {
-                                    superWeight[i ][j + k - 1] += 500;
-                                    superWeight[i ][j + k + 5] += 500;
-                                    return;
-                                }
-                                else if(k == 0 && playBoard[i ][j + k - 1] == color) {
-                                    superWeight[i ][j + k + 5] += 500;
-                                    return;
-                                }
-                                else if(k == 1 && playBoard[i ][j + k + 5] == color){
-                                    superWeight[i ][j + k - 1] += 500;
-                                    return;
-                                }
-                                break;
-                            }
-                            //3연속 2공백 1
-                            else if(playBoard[i ][j + k] == opponent && playBoard[i ][j + k + 3] == 0 && playBoard[i ][j + k + 4] == 0) {
-                                 if (weight[i ][j + k + 3] > weight[i ][j + k + 4]) {
-                                     superWeight[i ][j + k + 3] += 500;    
-                                 } else {
-                                     superWeight[i ][j + k + 4] += 500;
-                                 }
-                                 return;
-                            }
-                        }
-                    }
-
-
-                    else if(check == 2) {
-                        for(int k = 0; k < 6; k++) {
-                            if(playBoard[i ][j + k] == opponent) {
-                                //2연속 1공백 2
-                                if(playBoard[i ][j + k - 1] == 0 &&playBoard[i ][j + k + 5] == 0) {
-                                    superWeight[i ][j + k - 1] += 500;
-                                    superWeight[i ][j + k + 5] += 500;
-                                    return;
-                                }
-                                else if(k == 0 && playBoard[i ][j + k -1] == color) {
-                                    superWeight[i ][j + k + 5] += 500;
-                                    return;
-                                }
-                                else if(k == 1 && playBoard[i ][j + k + 5] == color) {
-                                    superWeight[i ][j + k - 1] += 500;
-                                    return;
-                                }
-                                //2연속 2공백 2
-                                else if(playBoard[i ][j + k + 2] == 0 && playBoard[i ][j + k + 3] == 0){
-                                    if(weight[i ][j + k + 2] > weight[i ][j + k + 3]) {
-                                        superWeight[i ][j + k + 2] += 500;
-                                    }
-                                    else {
-                                        superWeight[i ][j + k + 3] += 500;
-                                    }
-                                    return;
-                                }
-                                break;
-                            }
-                        }
-                    }
-
-
-                    else if(check == 1) {
-                        for(int k = 0; k < 6; k++) {
-                            //1 1공백 3연속
-                            if(playBoard[i ][j + k] == opponent && playBoard[i ][j + k + 2] == opponent) {
-                                if(playBoard[i ][j + k - 1] == 0 && playBoard[i ][j + k + 5] == 0) {
-                                    superWeight[i ][j + k - 1] += 500;
-                                    superWeight[i ][j + k + 5] += 500;
-                                    return;
-                                }
-                                else if(k == 0 && playBoard[i ][j + k - 1] == color) {
-                                    superWeight[i ][j + k + 5] += 500;
-                                    return;
-                                }
-                                else if(k == 1 && playBoard[i ][j + k + 5] == color) {
-                                    superWeight[i ][j + k - 1] += 500;
-                                    return;
-                                }
-                                break;
-                            }
-                            //1 2공백 3연속
-                            else if(playBoard[i ][j + k] == opponent) {
-                                if(weight[i ][j + k + 1] > weight[i ][j + k + 2]) {
-                                    superWeight[i ][j + k + 1] += 500;
-                                }else {
-                                    superWeight[i ][j + k + 2] += 500;
-                                }
-                                return;
-                            }
-                        } 
-                    } 
-                    
-                } catch (ArrayIndexOutOfBoundsException e) { 
-                	 System.out.println("index error " + i + " " + j);
-                }
-              }
-              else if(myCount == 3) {
-            	  for(int k = 0; k < 6; k++) {
-            		  if(playBoard[i][j + k] == 0)
-                		  superWeight[i][j + k] += 100;
-            	  }
-              }
-
-
-
-
-          }
-      }
-      
-     
-
-      
-      
-      
-      
-      //좌대각)\) 방어 시작점 ------------------------------------------------------------------------
-      
-      for (int i = 0; i < 14; i++) {
-          for (int j = 0; j < 14; j++) {
-              myCount = 0;
-              check = 0;
-              for (int k = 0; k < 6; k++) {
-                  try {
-                      if (playBoard[i + k][j + k] == opponent) {
-                          myCount++;
-                      } else if (playBoard[i + k][j + k] == color) {
-                          myCount = 0;
-                          break;
-                      } else if (playBoard[i + k][j + k] == 0) {
-                          if (check == 0 && myCount != 0)
-                              check = myCount;
-                      }
-
-                  } catch (ArrayIndexOutOfBoundsException e) {
-                	  System.out.println("index error " + i + " " + j);
-                  }
-              }
-              // 5 왼쪽 위에서 오른쪽 아래(좌대각\) 방어
-              if (myCount == 5) {
-                  try {
-                      // 연속
-                      if (check == 5) {
-                          try {
-                              if (playBoard[i][j] == 0 && playBoard[i - 1][j - 1] != opponent) {
-                                  if (playBoard[i + 6][j + 6] == 0) {
-                                      superWeight[i][j] += 500;
-                                      superWeight[i + 6][j + 6] += 500;
-                                      return;
-                                  } else if (playBoard[i + 6][j + 6] == color) {
-                                      superWeight[i][j] += 500;
-                                      return;
-                                  }
-                              } else if (playBoard[i + 5][j + 5] == 0 && playBoard[i - 6][j - 6] != opponent) {
-                                  if (playBoard[i - 1][j - 1] == 0) {
-                                      superWeight[i - 1][j - 1] += 500;
-                                      superWeight[i + 5][j + 5] += 500;
-                                      return;
-                                  } else if (playBoard[i - 1][j - 1] == color) {
-                                      superWeight[i + 5][j + 5] += 500;
-                                      return;
-                                  }
-                              }
-                          } catch (ArrayIndexOutOfBoundsException e) {
-                        	  System.out.println("index error " + i + " " + j);
-                          }
-                      }
-                      // 중간에 공백 있음
-                      else if (playBoard[i - 1][j - 1] != opponent && playBoard[i + 6][j + 6] != opponent) {
-                          for (int k = 0; k < 6; k++) {
-                              if (playBoard[i + k][j + k] == 0) {
-                                  superWeight[i + k][j + k] += 500;
-                                  return;
-                              }
-                          }
-                      }
-                  } catch (ArrayIndexOutOfBoundsException e) {
-                	  System.out.println("index error " + i + " " + j);
-                  }
-              } else if (myCount == 4) {
-                  if (check == 4) {
-                      for (int k = 0; k < 6; k++) {
-                          try {
-                              // 4개 연속
-                              if (playBoard[i + k][j + k] == opponent) {
-                                  if (playBoard[i + k - 1][j + k - 1] == 0
-                                          && playBoard[i + k + 4][j + k + 4] == 0) {
-                                      superWeight[i + k - 1][j + k - 1] += 500;
-                                      superWeight[i + k + 4][j + k + 4] += 500;
-                                      return;
-                                  } else if (playBoard[i - 1][j - 1] == color
-                                          && playBoard[i + k + 4][j + k + 4] == 0) {
-                                      superWeight[i + k + 4][j + k + 4] += 500;
-                                      return;
-                                  } else if (playBoard[i + 4][j + 4] == color
-                                          && playBoard[i + k - 1][j + k - 1] == 0) {
-                                      superWeight[i + k - 1][j + k - 1] += 500;
-                                      return;
-                                  }
-                              }
-                          } catch (ArrayIndexOutOfBoundsException e) {
-                        	  System.out.println("index error " + i + " " + j);
-                          }
-                      }
-                  } else if (check == 3) {
-                      for (int k = 0; k < 6; k++) {
-                          try {
-                              // 3연속 1 공백 1
-                              if (playBoard[i + k][j + k] == opponent
-                                      && playBoard[i + k + 4][j + k + 4] == opponent) {
-                                  if (playBoard[i + k - 1][j + k - 1] == 0 && playBoard[i + k + 5][j + k + 5] == 0) {
-                                      superWeight[i + k - 1][j + k - 1] += 500;
-                                      superWeight[i + k + 5][j + k + 5] += 500;
-                                      return;
-                                  } else if (k == 0 && playBoard[i + k - 1][j + k - 1] == color) {
-                                      superWeight[i + k + 5][j + k + 5] += 500;
-                                      return;
-                                  } else if (k == 1 && playBoard[i + k + 5][j + k + 5] == color) {
-                                      superWeight[i + k - 1][j + k - 1] += 500;
-                                      return;
-                                  }
-                              }
-                              // 3연속 2공백 1
-                              else if (playBoard[i + k][j + k] == opponent && playBoard[i + k + 3][j + k + 3] == 0
-                                      && playBoard[i + k + 4][j + k + 4] == 0) {
-                                  if (weight[i + k + 3][j + k + 3] > weight[i + k + 4][j + k + 4]) {
-                                      superWeight[i + k + 3][j + k + 3] += 500;
-                                  } else {
-                                      superWeight[i + k + 4][j + k + 4] += 500;
-                                  }
-                                  return;
-                              }
-                          } catch (ArrayIndexOutOfBoundsException e) {
-                        	  System.out.println("index error " + i + " " + j);
-                          }
-                      }
-                  } else if (check == 2) {
-                      for (int k = 0; k < 6; k++) {
-                          try {
-                              if (playBoard[i + k][j + k] == opponent) {
-                                  // 2연속 1공백 2
-                                  if (playBoard[i + k - 1][j + k - 1] == 0 && playBoard[i + k + 5][j + k + 5] == 0) {
-                                      superWeight[i + k - 1][j + k - 1] += 500;
-                                      superWeight[i + k + 5][j + k + 5] += 500;
-                                      return;
-                                  } else if (k == 0 && playBoard[i + k - 1][j + k - 1] == color) {
-                                      superWeight[i + k + 5][j + k + 5] += 500;
-                                      return;
-                                  } else if (k == 1 && playBoard[i + k + 5][j + k + 5] == color) {
-                                      superWeight[i + k - 1][j + k - 1] += 500;
-                                      return;
-                                  }
-                                  // 2연속 2공백 2
-                                  else if (playBoard[i + k + 2][j + k + 2] == 0
-                                          && playBoard[i + k + 3][j + k + 3] == 0) {
-                                      if (weight[i + k + 2][j + k + 2] > weight[i + k + 3][j + k + 3]) {
-                                          superWeight[i + k + 2][j + k + 2] += 500;
-                                      } else {
-                                          superWeight[i + k + 3][j + k + 3] += 500;
-                                      }
-                                      return;
-                                  }
-                              }
-                          } catch (ArrayIndexOutOfBoundsException e) {
-                        	  System.out.println("index error " + i + " " + j);
-                          }
-                      }
-                  } else if (check == 1) {
-                      for (int k = 0; k < 6; k++) {
-                          try {
-                              // 1 1공백 3연속
-                              if (playBoard[i + k][j + k] == opponent
-                                      && playBoard[i + k + 2][j + k + 2] == opponent) {
-                                  if (playBoard[i + k - 1][j + k - 1] == 0 && playBoard[i + k + 5][j + k + 5] == 0) {
-                                      superWeight[i + k - 1][j + k - 1] += 500;
-                                      superWeight[i + k + 5][j + k + 5] += 500;
-                                      return;
-                                  } else if (k == 0 && playBoard[i + k - 1][j + k - 1] == color) {
-                                      superWeight[i + k + 5][j + k + 5] += 500;
-                                      return;
-                                  } else if (k == 1 && playBoard[i + k + 5][j + k + 5] == color) {
-                                      superWeight[i + k - 1][j + k - 1] += 500;
-                                      return;
-                                  }
-                              }
-                              // 1 2공백 3연속
-                              else if (playBoard[i + k][j + k] == opponent) {
-                                  if (weight[i + k + 1][j + k + 1] > weight[i + k + 2][j + k + 2]) {
-                                      superWeight[i + k + 1][j + k + 1] += 500;
-                                  } else {
-                                      superWeight[i + k + 2][j + k + 2] += 500;
-                                  }
-                                  return;
-                              }
-                          } catch (ArrayIndexOutOfBoundsException e) {
-                        	  System.out.println("index error " + i + " " + j);
-                          }
-                      }
-                  }
-              }
-              else if(myCount == 3) {
-            	  for(int k = 0; k < 6; k++) {
-            		  if(playBoard[i + k][j + k] == 0) {
-            			  superWeight[i + k][j + k] += 100;
-            		  }
-            	  }
-              }
-          }
-      }
-
-      // 우대각 방어 시작점 -------------------------------------------------------------------------------
-      
-      for (int j = 0; j < 14; j++) {
-          for (int i = 5; i < 19; i++) {
-              myCount = 0;
-              check = 0;
-              for (int k = 0; k < 6; k++) {
-                  try {
-                      if (playBoard[i - k][j + k] == opponent) {
-                          myCount++;
-                      } else if (playBoard[i - k][j + k] == color) {
-                          myCount = 0;
-                          break;
-                      } else if (playBoard[i - k][j + k] == 0) {
-                          if (check == 0 && myCount != 0)
-                              check = myCount;
-                      }
-
-                  } catch (ArrayIndexOutOfBoundsException e) {
-                	  System.out.println("index error " + i + " " + j);
-                  }
-              }
-              if (myCount == 5) {
-                  try {
-                      // 5개 연속
-                      if (check == 5) {
-                          try {
-                              if (playBoard[i][j] == 0 && playBoard[i + 1][j - 1] != opponent) {
-                                  if (playBoard[i - 6][j + 6] == 0) {
-                                      superWeight[i][j] += 500;
-                                      superWeight[i - 6][j + 6] += 500;
-                                      return;
-                                  } else if (playBoard[i - 6][j + 6] == color) {
-                                      superWeight[i][j] += 500;
-                                      return;
-                                  }
-                              } else if (playBoard[i - 5][j + 5] == 0 && playBoard[i - 6][j + 6] != opponent) {
-                                  if (playBoard[i - 1][j + 1] == 0) {
-                                      superWeight[i - 1][j + 1] += 500;
-                                      superWeight[i - 5][j + 5] += 500;
-                                      return;
-                                  } else if (playBoard[i + 1][j - 1] == color) {
-                                      superWeight[i - 5][j + 5] += 500;
-                                      return;
-                                  }
-                              }
-                          } catch (ArrayIndexOutOfBoundsException e) {
-                        	  System.out.println("index error " + i + " " + j);
-                          }
-                      }
-                      // 중간에 공백 있음
-                      else if (playBoard[i + 1][j - 1] != opponent && playBoard[i - 6][j + 6] != opponent) {
-                          for (int k = 0; k < 6; k++) {
-                              if (playBoard[i - k][j + k] == 0) {
-                                  superWeight[i - k][j + k] += 500;
-                                  return;
-                              }
-                          }
-                      }
-                  } catch (ArrayIndexOutOfBoundsException e) {
-                	  System.out.println("index error " + i + " " + j);
-                  }
-              } else if (myCount == 4) {
-                  if (check == 4) {
-                      for (int k = 0; k < 6; k++) {
-                          try {
-                              // 4개 연속
-                              if (playBoard[i - k][j + k] == opponent) {
-                                  if (playBoard[i - k + 1][j + k - 1] == 0 && playBoard[i - k - 4][j + k + 4] == 0) {
-                                      superWeight[i - k + 1][j + k - 1] += 500;
-                                      superWeight[i - k - 4][j + k + 4] += 500;
-                                      return;
-                                  } else if (playBoard[i + 1][j - 1] == color
-                                          && playBoard[i - k - 4][j + k + 4] == 0) {
-                                      superWeight[i - k - 4][j + k + 4] += 500;
-                                      return;
-                                  } else if (playBoard[i - 4][j + 4] == color
-                                          && playBoard[i - k + 1][j + k - 1] == 0) {
-                                      superWeight[i - k + 1][j + k - 1] += 500;
-                                      return;
-                                  }
-                              }
-                          } catch (ArrayIndexOutOfBoundsException e) {
-                        	  System.out.println("index error " + i + " " + j);
-                          }
-                      }
-                  } else if (check == 3) {
-                      for (int k = 0; k < 6; k++) {
-                          try {
-                              // 3연속 1 공백 1
-                              if (playBoard[i - k][j + k] == opponent
-                                      && playBoard[i - k - 4][j + k + 4] == opponent) {
-                                  if (playBoard[i - k + 1][j + k - 1] == 0 && playBoard[i - k - 5][j + k + 5] == 0) {
-                                      superWeight[i - k + 1][j + k - 1] += 500;
-                                      superWeight[i - k - 5][j + k + 5] += 500;
-                                      return;
-                                  } else if (k == 0 && playBoard[i - k + 1][j + k - 1] == color) {
-                                      superWeight[i - k - 5][j + k + 5] += 500;
-                                      return;
-                                  } else if (k == 1 && playBoard[i - k - 5][j + k + 5] == color) {
-                                      superWeight[i - k + 1][j + k - 1] += 500;
-                                      return;
-                                  }
-                              }
-                              // 3연속 2공백 1
-                              else if (playBoard[i - k][j + k] == opponent && playBoard[i - k - 3][j + k + 3] == 0
-                                      && playBoard[i - k - 4][j + k + 4] == 0) {
-                                  if (weight[i - k - 3][j + k + 3] > weight[i - k - 4][j + k + 4]) {
-                                      superWeight[i - k - 3][j + k + 3] += 500;
-                                  } else {
-                                      superWeight[i - k - 4][j + k + 4] += 500;
-                                  }
-                                  return;
-                              }
-                          } catch (ArrayIndexOutOfBoundsException e) {
-                        	  System.out.println("index error " + i + " " + j);
-                          }
-                      }
-                  } else if (check == 2) {
-                      for (int k = 0; k < 6; k++) {
-                          try {
-                              if (playBoard[i - k][j + k] == opponent) {
-                                  // 2연속 1공백 2
-                                  if (playBoard[i - k + 1][j + k - 1] == 0 && playBoard[i - k - 5][j + k + 5] == 0) {
-                                      superWeight[i - k + 1][j + k - 1] += 500;
-                                      superWeight[i - k - 5][j + k + 5] += 500;
-                                      return;
-                                  } else if (k == 0 && playBoard[i - k + 1][j + k - 1] == color) {
-                                      superWeight[i - k - 5][j + k + 5] += 500;
-                                      return;
-                                  } else if (k == 1 && playBoard[i - k - 5][j + k + 5] == color) {
-                                      superWeight[i - k + 1][j + k - 1] += 500;
-                                      return;
-                                  }
-                                  // 2연속 2공백 2
-                                  else if (playBoard[i - k - 2][j + k + 2] == 0
-                                          && playBoard[i - k - 3][j + k + 3] == 0) {
-                                      if (weight[i - k - 2][j + k + 2] > weight[i - k - 3][j + k + 3]) {
-                                          superWeight[i - k - 2][j + k + 2] += 500;
-                                      } else {
-                                          superWeight[i - k + 3][j - k + 3] += 500;
-                                      }
-                                      return;
-                                  }
-                              }
-                          } catch (ArrayIndexOutOfBoundsException e) {
-                        	  System.out.println("index error " + i + " " + j);
-                          }
-                      }
-                  } else if (check == 1) {
-                      for (int k = 0; k < 6; k++) {
-                          try {
-                              // 1 1공백 3연속
-                              if (playBoard[i - k][j + k] == opponent
-                                      && playBoard[i - k - 2][j + k + 2] == opponent) {
-                                  if (playBoard[i - k + 1][j + k - 1] == 0 && playBoard[i - k - 5][j + k + 5] == 0) {
-                                      superWeight[i - k + 1][j + k - 1] += 500;
-                                      superWeight[i - k - 5][j + k + 5] += 500;
-                                      return;
-                                  } else if (k == 0 && playBoard[i - k + 1][j + k - 1] == color) {
-                                      superWeight[i - k - 5][j + k + 5] += 500;
-                                      return;
-                                  } else if (k == 1 && playBoard[i - k - 5][j + k + 5] == color) {
-                                      superWeight[i - k + 1][j + k - 1] += 500;
-                                      return;
-                                  }
-                              }
-                              // 1 2공백 3연속
-                              else if (playBoard[i - k][j + k] == opponent) {
-                                  if (weight[i - k - 1][j + k + 1] > weight[i - k - 2][j + k + 2]) {
-                                      superWeight[i - k - 1][j + k + 1] += 500;
-                                  } else {
-                                      superWeight[i - k - 2][j + k + 2] += 500;
-                                  }
-                                  return;
-                              }
-                          } catch (ArrayIndexOutOfBoundsException e) {
-                        	  System.out.println("index error " + i + " " + j);
-                          }
-                      }
-                  }
-              }
-              else if(myCount == 3) {
-            	  for(int k = 0; k < 6; k++) {
-            		  if(playBoard[i - k][j + k] == 0)
-            			  superWeight[i - k][j + k] += 100;
-            	  }
-              }
-          }
-      }
-      addDefaultWeight();
-  }
-
-      //// 전개 플러스점수
-      //6개 범위 내에서 나의/상대의 돌 갯수와 빈칸의 합이 6이라면 빈칸에 나의/상대의 돌 *10만큼 가중치 주기. 
-
-  private static void addDefaultWeight(){
-
-	     
-	     int myCount, yourCount, emptyCount;
-	     
-	         // 세로 시작점 ----------------------------------------------------------------------
-	         for(int i = 0; i < 19; i++) { //0~18
-	           for(int j = 0; j < 14; j++) { //0~12
-	              
-	              myCount = 0;
-	              yourCount = 0;
-	              emptyCount = 0;
-	              
-	             for(int k = 0; k < 6; k++) { //13~18
-	                   if(playBoard[i][j+k] == color) myCount++;
-	                   else if(playBoard[i][j+k] == 0) emptyCount++;
-	                   else if(playBoard[i][j+k] == opponent) yourCount ++;
-	             }
-	             
-	             
-	             if(myCount + emptyCount == 6) {
-	                for(int k = 0; k < 6; k++) {
-	                   if(playBoard[i][j+k] == 0) superWeight[i][j+k] += (myCount*10);
-	                }
-	             }else if(yourCount + emptyCount == 6) {
-	                for(int k = 0; k < 6; k++) {
-	                   if(playBoard[i][j+k] == 0) superWeight[i][j+k] += (yourCount*10);
-	                }
-	             }
-	             
-	             
-	           }
-	         }
-	   
-	        
-	         // 가로 시작점 -------------------------------------------------------------------------------------------------
-	         for(int j = 0; j < 19; j++) {
-	          for(int i = 0; i < 14; i++) {
-	             
-	             myCount = 0;
-	              yourCount = 0;
-	              emptyCount = 0;
-	             
-	             for(int k = 0; k < 6; k++) {
-	                if(playBoard[i+k][j] == color) myCount++;
-	                else if(playBoard[i+k][j] == 0) emptyCount++;
-	             }
-	             
-	             if(myCount + emptyCount == 6) {
-	                for(int k = 0; k < 6; k++) {
-	                   if(playBoard[i+k][j] == 0) superWeight[i+k][j] += (myCount*10);
-	                }
-	             }else if(yourCount + emptyCount == 6) {
-	                for(int k = 0; k < 6; k++) {
-	                   if(playBoard[i+k][j] == 0) superWeight[i+k][j] += (yourCount*10);
-	                }
-	             }
-	             
-	          }
-	         }
-	          
-	   
-	         
-	      // 좌대각 시작점 ----------------------------------------------------------------------
-	         for(int i = 0; i < 14; i++) { //0~13
-	          for(int j = 0; j < 14; j++) { //0~13
-	              
-	              myCount = 0;
-	              yourCount = 0;
-	              emptyCount = 0;
-	              
-	              for(int k = 0; k < 6; k++) { //13~18, 본인부터 본인+5, 왼쪽아래로 내려가니까 좌대각 \
-	                  if(playBoard[i+k][j+k] == color) myCount++;
-	                  else if(playBoard[i+k][j+k] == 0) emptyCount++;
-	              }
-	              
-	              
-	             if(myCount + emptyCount == 6) {
-	                for(int k = 0; k < 6; k++) {
-	                   if(playBoard[i+k][j+k] == 0) superWeight[i+k][j+k] += (myCount*10);
-	                }
-	             }else if(yourCount + emptyCount == 6) {
-	                for(int k = 0; k < 6; k++) {
-	                   if(playBoard[i+k][j+k] == 0) superWeight[i+k][j+k] += (yourCount*10);
-	                }
-	             }
-	   
-	              
-	              
-	          }
-	      }
-	   
-	      
-	      // 우대각 시작점 ----------------------------------------------------------------------
-	      for(int i = 5; i < 19; i++) { //5~18
-	          for(int j = 0; j < 14; j++) { //0~13
-	              
-	              myCount = 0;
-	              yourCount = 0;
-	              emptyCount = 0;
-	              
-	              for(int k = 0; k < 6; k++) { //13~18, 본인부터...오른쪽아래로 내려가니까 우대각 /
-	                  if(playBoard[i-k][j+k] == color) myCount++;
-	                  else if(playBoard[i-k][j+k] == 0) emptyCount++;
-	              }
-	              
-	              if(myCount + emptyCount == 6) {
-	                for(int k = 0; k < 6; k++) {
-	                   if(playBoard[i-k][j+k] == 0) superWeight[i-k][j+k] += (myCount*10);
-	                }
-	             }else if(yourCount + emptyCount == 6) {
-	                for(int k = 0; k < 6; k++) {
-	                   if(playBoard[i-k][j+k] == 0) superWeight[i-k][j+k] += (yourCount*10);
-	                }
-	             }
-	   
-	              
-	          }
-	      }
-	      
-	      System.out.println("Default weight added.");
-	   
-	          
-
-	     
-	     
-	     
-	  }
-
-
-
-  
-  
-  // 일반가중치+특수가중치 판에서 최대 가중치를 찾아 x,y 값 저장해주기
-  public static void returnPoint() {
-	  System.out.println("before addSuperWeight\n");
-	  
-	  addSuperWeight();
-	  System.out.println("done addsuperWeight");
-	 // showWeight();
-	  
-	  
-	  
-      int max = 0;
-      for (int i = 0; i < 19; i++) {
-          for (int j = 0; j < 19; j++) {
-              if (superWeight[i][j] + weight[i][j] > max) {
-                  max = superWeight[i][j] + weight[i][j];
-                  x = i;
-                  y = j;
-              }
-          }
-      }
-      
-      showWeight();
-
-  }
-
-  
-  
-  // 현재 가중치 상태 콘솔에 출력
-  public static void showWeight() {
-      for (int i = 18; i >= 0; i--) {
-      //for (int i = 18; i <= 0; i—) {
-          for (int j = 0; j < 19; j++) {
-              System.out.printf("[%2d]", weight[j][i] + superWeight[j][i]);
-          }
-          System.out.println("");
-      }
-      System.out.println("");
-  }
-
-  
+	//// 전개 플러스점수
+	// 6개 범위 내에서 나의/상대의 돌 갯수와 빈칸의 합이 6이라면 빈칸에 나의/상대의 돌 *10만큼 가중치 주기.
+
+	private static void addDefaultWeight() {
+
+		int myCount, yourCount, emptyCount;
+
+		// 세로 시작점 ----------------------------------------------------------------------
+		for (int i = 0; i < 19; i++) { // 0~18
+			for (int j = 0; j < 14; j++) { // 0~12
+
+				myCount = 0;
+				yourCount = 0;
+				emptyCount = 0;
+
+				for (int k = 0; k < 6; k++) { // 13~18
+					if (playBoard[i][j + k] == color)
+						myCount++;
+					else if (playBoard[i][j + k] == 0)
+						emptyCount++;
+					else if (playBoard[i][j + k] == opponent)
+						yourCount++;
+				}
+
+				if (myCount + emptyCount == 6) {
+					for (int k = 0; k < 6; k++) {
+						if (playBoard[i][j + k] == 0)
+							superWeight[i][j + k] += (myCount * 10);
+					}
+				} else if (yourCount + emptyCount == 6) {
+					for (int k = 0; k < 6; k++) {
+						if (playBoard[i][j + k] == 0)
+							superWeight[i][j + k] += (yourCount * 10);
+					}
+				}
+
+			}
+		}
+
+		// 가로 시작점
+		// -------------------------------------------------------------------------------------------------
+		for (int j = 0; j < 19; j++) {
+			for (int i = 0; i < 14; i++) {
+
+				myCount = 0;
+				yourCount = 0;
+				emptyCount = 0;
+
+				for (int k = 0; k < 6; k++) {
+					if (playBoard[i + k][j] == color)
+						myCount++;
+					else if (playBoard[i + k][j] == 0)
+						emptyCount++;
+				}
+
+				if (myCount + emptyCount == 6) {
+					for (int k = 0; k < 6; k++) {
+						if (playBoard[i + k][j] == 0)
+							superWeight[i + k][j] += (myCount * 10);
+					}
+				} else if (yourCount + emptyCount == 6) {
+					for (int k = 0; k < 6; k++) {
+						if (playBoard[i + k][j] == 0)
+							superWeight[i + k][j] += (yourCount * 10);
+					}
+				}
+
+			}
+		}
+
+		// 좌대각 시작점
+		// ----------------------------------------------------------------------
+		for (int i = 0; i < 14; i++) { // 0~13
+			for (int j = 0; j < 14; j++) { // 0~13
+
+				myCount = 0;
+				yourCount = 0;
+				emptyCount = 0;
+
+				for (int k = 0; k < 6; k++) { // 13~18, 본인부터 본인+5, 왼쪽아래로 내려가니까 좌대각 \
+					if (playBoard[i + k][j + k] == color)
+						myCount++;
+					else if (playBoard[i + k][j + k] == 0)
+						emptyCount++;
+				}
+
+				if (myCount + emptyCount == 6) {
+					for (int k = 0; k < 6; k++) {
+						if (playBoard[i + k][j + k] == 0)
+							superWeight[i + k][j + k] += (myCount * 10);
+					}
+				} else if (yourCount + emptyCount == 6) {
+					for (int k = 0; k < 6; k++) {
+						if (playBoard[i + k][j + k] == 0)
+							superWeight[i + k][j + k] += (yourCount * 10);
+					}
+				}
+
+			}
+		}
+
+		// 우대각 시작점
+		// ----------------------------------------------------------------------
+		for (int i = 5; i < 19; i++) { // 5~18
+			for (int j = 0; j < 14; j++) { // 0~13
+
+				myCount = 0;
+				yourCount = 0;
+				emptyCount = 0;
+
+				for (int k = 0; k < 6; k++) { // 13~18, 본인부터...오른쪽아래로 내려가니까 우대각 /
+					if (playBoard[i - k][j + k] == color)
+						myCount++;
+					else if (playBoard[i - k][j + k] == 0)
+						emptyCount++;
+				}
+
+				if (myCount + emptyCount == 6) {
+					for (int k = 0; k < 6; k++) {
+						if (playBoard[i - k][j + k] == 0)
+							superWeight[i - k][j + k] += (myCount * 10);
+					}
+				} else if (yourCount + emptyCount == 6) {
+					for (int k = 0; k < 6; k++) {
+						if (playBoard[i - k][j + k] == 0)
+							superWeight[i - k][j + k] += (yourCount * 10);
+					}
+				}
+
+			}
+		}
+
+		System.out.println("Default weight added.");
+
+	}
+
+	// 일반가중치+특수가중치 판에서 최대 가중치를 찾아 x,y 값 저장해주기
+	public static void returnPoint() {
+		System.out.println("before addSuperWeight\n");
+
+		addSuperWeight();
+		System.out.println("done addsuperWeight");
+		// showWeight();
+
+		int max = 0;
+		for (int i = 0; i < 19; i++) {
+			for (int j = 0; j < 19; j++) {
+				if (superWeight[i][j] + weight[i][j] > max) {
+					max = superWeight[i][j] + weight[i][j];
+					x = i;
+					y = j;
+				}
+			}
+		}
+
+		showWeight();
+
+	}
+
+	// 현재 가중치 상태 콘솔에 출력
+	public static void showWeight() {
+		for (int i = 18; i >= 0; i--) {
+			for (int j = 0; j < 19; j++) {
+				System.out.printf("[%2d]", weight[j][i] + superWeight[j][i]);
+			}
+			System.out.println("");
+		}
+		System.out.println("");
+	}
 
 }
