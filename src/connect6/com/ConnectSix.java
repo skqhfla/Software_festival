@@ -354,12 +354,6 @@ public class ConnectSix {
 
 			board[i][j] = color; //update Board yeah 
 			
-			
-			
-			Betago.addWeight(i, j);
-			
-			
-			
 			return null;
 		}
 		
