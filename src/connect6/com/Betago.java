@@ -144,7 +144,7 @@ public class Betago {
                          superWeight[i][j+k] += 500;
                          return;
                       }else if(myCount == 3) {
-                         superWeight[i][j+k] += 300;
+                         superWeight[i][j+k] += 100;
                       }
                    }
                }
@@ -167,7 +167,7 @@ public class Betago {
             }
             
            //7mok nono 
-           if ((i -1 < 0 || playBoard[i - 1][j] == color) || (i + 6 > 18 || playBoard[i + 6][j] == color)) continue;
+           if ((i - 1 < 0 || playBoard[i - 1][j] == color) || (i + 6 > 18 || playBoard[i + 6][j] == color)) continue;
               
            if(myCount + emptyCount == 6) {
               for(int k = 0; k < 6; k++) { //13~18
@@ -176,7 +176,7 @@ public class Betago {
                           superWeight[i+k][j] += 500;
                           return;
                        }else if(myCount == 3) {
-                          superWeight[i+k][j] += 300;
+                          superWeight[i+k][j] += 100;
                        }
                      }
               }
@@ -199,16 +199,18 @@ public class Betago {
                else if(playBoard[i+k][j+k] == 0) emptyCount++;
            }
 
-           if(!(myCount + emptyCount == 6) || (emptyCount > 2)) continue;
+           //칠목방지, 인덱스범위 
+           if(((i-1 < 0 || j-1 < 0) || playBoard[i-1][j - 1] == color) || ((i+6 > 18 || j+6 > 18) || playBoard[i+6][j+6] == color)) continue;
            
-           if(((i-1 >= 0 && j-1 >= 0) && playBoard[i-1][j - 1] != color) && ((i+6 <= 18 && j+6 <= 18) && playBoard[i+6][j+6] != color)) {
-               //System.out.println("좌대각 공격로 진입." + i+" : "+j);
-
+           if(myCount + emptyCount == 6) {
                for(int k = 0; k < 6; k++) { //빈칸에 가중치 쏴주고 리턴 
-                   if(playBoard[i+k][j+k] == 0 && weight[i+k][j+k] >= 0) {
-                       superWeight[i+k][j+k] += 500;
-                      // System.out.println("가중치 부여됨 " + i+" : "+j+k);
-                       return;
+                   if(playBoard[i+k][j+k] == 0) {
+                	   if(myCount >= 4) {
+                		   superWeight[i+k][j+k] += 500;
+                           return;
+                	   }else if(myCount == 3) {
+                		   superWeight[i+k][j+k] += 100;
+                	   }
                    }
                }
            }
@@ -228,17 +230,18 @@ public class Betago {
                else if(playBoard[i-k][j+k] == 0) emptyCount++;
            }
 
-           if(!(myCount + emptyCount == 6) || (emptyCount > 2)) continue; 
-           
-           if(((i+1 <=18&& j-1 >= 0) && playBoard[i+1][j - 1] != color) && ((i-6 >= 0 && j+6 <= 18) && playBoard[i-6][j+6] != color)) {
-               for(int k = 0; k < 6; k++) { //빈칸에 가중치 쏴주고 리턴
-                   
-                  // System.out.println("우대각 공격로 진입." + i+" : "+j);
-                   
-                   if(playBoard[i-k][j+k] == 0 && weight[i-k][j+k] >= 0){
-                       superWeight[i-k][j+k] += 500;
-                      // System.out.println("가중치 부여됨 " + i+" : "+j+k);
-                       return;
+           //칠목방지 + 인덱스범위 
+           if(((i+1 >18 || j-1 < 0) || playBoard[i+1][j - 1] == color) || ((i-6 < 0 || j+6 > 18) || playBoard[i-6][j+6] == color)) continue; 
+               
+           if(myCount + emptyCount == 6) {
+        	   for(int k = 0; k < 6; k++) { //빈칸에 가중치 쏴주고 리턴
+                   if(playBoard[i-k][j+k] == 0){
+                	   if(myCount >= 4) {
+                		   superWeight[i-k][j+k] += 500;
+                           return;
+                	   }else if(myCount == 3) {
+                		   superWeight[i-k][j+k] += 100;
+                	   }
                    } 
                }
            }
@@ -246,12 +249,6 @@ public class Betago {
    }
 
        
-
-
-
-
-
-   
       //// 안놓으면 질 때, 한방방어
       //// ----------------------------------------------------------------------------------
        
