@@ -7,16 +7,16 @@ public class Betago {
 	static int color = DummyAI.getMyColor();
 	static int opponent = DummyAI.getYourColor();
 	private static int[][] playBoard = new int[19][19];
+	private static int[][] origin = new int[19][19];
 	
 	
 	//copy... (얕은복사라 주소지까지 연결된...)
 	public static void getBoard(ConnectSix.Board B) {
-		playBoard = B.board;
+		origin = B.board;
 	}
 	
 	//중간에 보드 임시로 원본이랑 끊어진,,그거... 
 	private static void getTempBoard(int x, int y) {
-		playBoard = playBoard.clone();
 		playBoard[x][y] = color;
 	}
 	
@@ -25,6 +25,11 @@ public class Betago {
 	//integer 형태의 이상적 좌표를 형식에 맞춘 String으로 바꿔 리턴(다음에 놓을 그거임. 스톤 하나하나 기준.)
 	public static String returnStringCoor() {
 		
+		for(int i = 0; i < 19; i++) {
+			for(int j = 0; j < 19; j++) {
+				playBoard[i][j] = origin[i][j];
+			}
+		}
 		
 		returnPoint();
 		//System.out.println("now x and y is "+x+", "+y);
