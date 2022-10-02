@@ -144,7 +144,11 @@ public class Betago {
                          superWeight[i][j+k] += 500;
                          return;
                       }else if(myCount == 3) {
+<<<<<<< HEAD
                          superWeight[i][j+k] += 100;
+=======
+                         superWeight[i][j+k] += 300;
+>>>>>>> 3b55490662a532f278c6ffb752be77c7fd1ee355
                       }
                    }
                }
@@ -167,7 +171,11 @@ public class Betago {
             }
             
            //7mok nono 
+<<<<<<< HEAD
            if ((i - 1 < 0 || playBoard[i - 1][j] == color) || (i + 6 > 18 || playBoard[i + 6][j] == color)) continue;
+=======
+           if ((i -1 < 0 || playBoard[i - 1][j] == color) || (i + 6 > 18 || playBoard[i + 6][j] == color)) continue;
+>>>>>>> 3b55490662a532f278c6ffb752be77c7fd1ee355
               
            if(myCount + emptyCount == 6) {
               for(int k = 0; k < 6; k++) { //13~18
@@ -176,7 +184,11 @@ public class Betago {
                           superWeight[i+k][j] += 500;
                           return;
                        }else if(myCount == 3) {
+<<<<<<< HEAD
                           superWeight[i+k][j] += 100;
+=======
+                          superWeight[i+k][j] += 300;
+>>>>>>> 3b55490662a532f278c6ffb752be77c7fd1ee355
                        }
                      }
               }
