@@ -32,26 +32,20 @@ public class Betago {
 		}
 		
 		returnPoint();
-		//System.out.println("now x and y is "+x+", "+y);
 		//x, y를 바탕으로 String형태의 머시깽이...
 		String stone1 = String.format("%c%02d", (char)((x<8)?(x+'A'):(x+'A'+1)), y+1);
 		
 		
 		//일단여기는절대두지말라는뜻!!!! board를 직접 수정하면 NOTEMPTY에러가 나서 임시방편으로... 
-		//weight[x][y] = -10000;
 		getTempBoard(x, y);
 		//방금 자기가 놓은거 업데이트해주고
-		//addWeight(x, y);
 		
 
 		returnPoint();
-		//System.out.println("now x and y is "+x+", "+y);
 		String stone2 = String.format("%c%02d", (char)((x<8)?(x+'A'):(x+'A'+1)), y+1);
-		//addWeight(x, y);
 		
 		
 		String result = stone1 + ":" + stone2;
-		//System.out.println(result);
 		
 		showWeight();
 		
@@ -67,43 +61,6 @@ public class Betago {
   // 가중치 설정을 위한 배열
   static int[][] weight = new int[19][19]; // 일반가중치(계속 누적)
   static int[][] superWeight = new int[19][19]; // 특수가중치(매 분석마다 리셋후 시작)
-  
-
-  
-  // 가중치 기본 누적하기 (매 실행 후에)
-  public static void addWeight(int x, int y) {
-	  
-
-      int n = 1; // 누적할 가중치의 양. 내 돌인지 상대 돌인지에 따라 달라짐. //근데 이게 의미가 있을까요? 
-
-      if (playBoard[x][y] == color) //black
-          n = 2;
-      else if (playBoard[x][y] == opponent) //white
-          n = 1;
-      else if (playBoard[x][y] == 3) { // 중립구 취급
-          weight[x][y] = -10000;
-          return;
-      } else return; // 이미 놓여진곳 취급
-      
-      weight[x][y] = -10000;
-
-      // 팔방을 뒤져서 이미 놓여진 곳만 아니라면 가중치 누적.
-      for (int i = x - 1; i < x + 2; i++) {
-          for (int j = y - 1; j < y + 2; j++) {
-              if (i == x && j == y) { // 본인자리에는 -1
-                  weight[x][y] = -10000;
-              } else {
-                  try {
-                      if (playBoard[i][j] == 0)
-                          weight[i][j] += n;
-                  } catch (ArrayIndexOutOfBoundsException e) {
-                  } // 인덱스 넘어서면 무시
-              }
-          }
-      }
-
-  }
-
   
   // 판 읽고 특수가중치 누적하기
   private static void addSuperWeight() {
@@ -1087,7 +1044,6 @@ public class Betago {
           }
       }
       addDefaultWeight();
-	  showWeight();
   }
 
       //// 전개 플러스점수
@@ -1232,7 +1188,7 @@ public class Betago {
 	  
 	  addSuperWeight();
 	  System.out.println("done addsuperWeight");
-	  showWeight();
+	 // showWeight();
 	  
 	  
 	  
