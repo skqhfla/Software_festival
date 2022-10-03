@@ -24,10 +24,10 @@ public class Betago {
 	// integer 형태의 이상적 좌표를 형식에 맞춘 String으로 바꿔 리턴(다음에 놓을 그거임. 스톤 하나하나 기준.)
 	public static String returnStringCoor() {
 
-		for (int i = 18; i >= 0; i--) {
-			for (int j = 0; j < 19; j++) {
-				playBoard[j][i] = origin[j][i];
-				System.out.printf("[%2d]", playBoard[j][i]);
+		for (int Y = 18; Y >= 0; Y--) {
+			for (int X = 0; X < 19; X++) {
+				playBoard[X][Y] = origin[X][Y];
+				System.out.printf("[%2d]", playBoard[X][Y]);
 			}
 			System.out.println("");
 		}
@@ -1019,7 +1019,7 @@ public class Betago {
 				} else if (yourCount + emptyCount == 6) {
 					for (int k = 0; k < 6; k++) {
 						if (playBoard[i][j + k] == 0)
-							superWeight[i][j + k] += (yourCount * 10);
+							superWeight[i][j + k] += (yourCount * 3);
 					}
 				}
 
@@ -1050,7 +1050,7 @@ public class Betago {
 				} else if (yourCount + emptyCount == 6) {
 					for (int k = 0; k < 6; k++) {
 						if (playBoard[i + k][j] == 0)
-							superWeight[i + k][j] += (yourCount * 10);
+							superWeight[i + k][j] += (yourCount * 3);
 					}
 				}
 
@@ -1081,7 +1081,7 @@ public class Betago {
 				} else if (yourCount + emptyCount == 6) {
 					for (int k = 0; k < 6; k++) {
 						if (playBoard[i + k][j + k] == 0)
-							superWeight[i + k][j + k] += (yourCount * 10);
+							superWeight[i + k][j + k] += (yourCount * 3);
 					}
 				}
 
@@ -1112,7 +1112,7 @@ public class Betago {
 				} else if (yourCount + emptyCount == 6) {
 					for (int k = 0; k < 6; k++) {
 						if (playBoard[i - k][j + k] == 0)
-							superWeight[i - k][j + k] += (yourCount * 10);
+							superWeight[i - k][j + k] += (yourCount * 3);
 					}
 				}
 
