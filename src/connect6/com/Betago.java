@@ -1163,10 +1163,15 @@ public class Betago {
 	// 현재 가중치 상태 콘솔에 출력
 	public static void showWeight() {
 		for (int i = 18; i >= 0; i--) {
+			System.out.printf("%2d ", 19-i);
 			for (int j = 0; j < 19; j++) {
 				System.out.printf("[%3d]", weight[j][i] + superWeight[j][i]);
 			}
 			System.out.println("");
+		}
+		System.out.print("   ");
+		for(int o = 0; o < 19; o++) {
+			System.out.printf("  %c  ", 65+o);
 		}
 		System.out.println("");
 	}
