@@ -7,6 +7,7 @@ public class Betago {
 
 	static int color = DummyAI.getMyColor();
 	static int opponent = DummyAI.getYourColor();
+	static int red = DummyAI.getRedColor();
 	private static int[][] playBoard = new int[19][19];
 	private static int[][] origin = new int[19][19];
 
