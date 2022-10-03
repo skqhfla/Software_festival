@@ -2,7 +2,6 @@ package connect6.com;
 
 public class Betago {
 
-	// 모든 돌이 놓일 때 마다 addWeight 실행시켜주고,
 	// AI턴에서는 returnPoint로 받아오기
 
 	static int color = DummyAI.getMyColor();
@@ -73,32 +72,36 @@ public class Betago {
 		//// 놓으면 이길 때(한방승리)
 		// -------------------------------------------------------------------------------------
 
-		for (int i = 0; i < 19; i++) { // 0~18
-			for (int j = 0; j < 14; j++) { // 0~12
+		
+		// 세로 공격 시작점
+		// -------------------------------------------------------------------------------------------------
+				
+		for (int X = 0; X < 19; X++) { // 0~18
+			for (int Y = 0; Y < 14; Y++) { // 0~12
 
 				myCount = 0;
 				emptyCount = 0;
 
 				for (int k = 0; k < 6; k++) { // 13~18
-					if (playBoard[i][j + k] == color)
+					if (playBoard[X][Y + k] == color)
 						myCount++;
-					else if (playBoard[i][j + k] == 0)
+					else if (playBoard[X][Y + k] == 0)
 						emptyCount++;
 				}
 
 				// 칠목방지
-				if ((j - 1 < 0 || playBoard[i][j - 1] == color) || (j + 6 > 18 || playBoard[i][j + 6] == color))
+				if ((Y - 1 < 0 || playBoard[X][Y - 1] == color) || (Y + 6 > 18 || playBoard[X][Y + 6] == color))
 					continue;
 
 				if (myCount + emptyCount == 6) {
 					for (int k = 0; k < 6; k++) { // 13~18
 
-						if (playBoard[i][j + k] == 0) {
+						if (playBoard[X][Y + k] == 0) {
 							if (myCount >= 4) {
-								superWeight[i][j + k] += 500;
+								superWeight[X][Y + k] += 500;
 								return;
 							} else if (myCount == 3) {
-								superWeight[i][j + k] += 100;
+								superWeight[X][Y + k] += 100;
 							}
 						}
 					}
@@ -109,31 +112,31 @@ public class Betago {
 
 		// 가로 공격 시작점
 		// -------------------------------------------------------------------------------------------------
-		for (int j = 0; j < 19; j++) {
-			for (int i = 0; i < 14; i++) {
+		for (int Y = 0; Y < 19; Y++) {
+			for (int X = 0; X < 14; X++) {
 
 				myCount = 0;
 				emptyCount = 0;
 
 				for (int k = 0; k < 6; k++) {
-					if (playBoard[i + k][j] == color)
+					if (playBoard[X + k][Y] == color)
 						myCount++;
-					else if (playBoard[i + k][j] == 0)
+					else if (playBoard[X + k][Y] == 0)
 						emptyCount++;
 				}
 
 				// 7mok nono
-				if ((i - 1 < 0 || playBoard[i - 1][j] == color) || (i + 6 > 18 || playBoard[i + 6][j] == color))
+				if ((X - 1 < 0 || playBoard[X - 1][Y] == color) || (X + 6 > 18 || playBoard[X + 6][Y] == color))
 					continue;
 
 				if (myCount + emptyCount == 6) {
 					for (int k = 0; k < 6; k++) { // 13~18
-						if (playBoard[i + k][j] == 0) {
+						if (playBoard[X + k][Y] == 0) {
 							if (myCount >= 4) {
-								superWeight[i + k][j] += 500;
+								superWeight[X + k][Y] += 500;
 								return;
 							} else if (myCount == 3) {
-								superWeight[i + k][j] += 100;
+								superWeight[X + k][Y] += 100;
 							}
 						}
 					}
@@ -142,75 +145,81 @@ public class Betago {
 			}
 		}
 
+		
 		// 좌대각 공격 시작점
 		// ----------------------------------------------------------------------
-		for (int i = 0; i < 14; i++) { // 0~13
-			for (int j = 0; j < 14; j++) { // 0~13
+		for (int X = 0; X < 14; X++) { // 0~13
+			for (int Y = 5; Y < 18; Y++) { // 0~13
 
 				myCount = 0;
 				emptyCount = 0;
 
 				for (int k = 0; k < 6; k++) { // 13~18, 본인부터 본인+5, 왼쪽아래로 내려가니까 좌대각 \
-					if (playBoard[i + k][j + k] == color)
+					if (playBoard[X + k][Y - k] == color)
 						myCount++;
-					else if (playBoard[i + k][j + k] == 0)
+					else if (playBoard[X + k][Y - k] == 0)
 						emptyCount++;
 				}
 
 				// 칠목방지, 인덱스범위
-				if (((i - 1 < 0 || j - 1 < 0) || playBoard[i - 1][j - 1] == color)
-						|| ((i + 6 > 18 || j + 6 > 18) || playBoard[i + 6][j + 6] == color))
+				if (((X - 1 < 0 || Y + 1 > 18) || playBoard[X - 1][Y + 1] == color)
+						|| ((X + 6 > 18 || Y - 6 < 0) || playBoard[X + 6][Y - 6] == color))
 					continue;
 
 				if (myCount + emptyCount == 6) {
 					for (int k = 0; k < 6; k++) { // 빈칸에 가중치 쏴주고 리턴
-						if (playBoard[i + k][j + k] == 0) {
+						if (playBoard[X + k][Y - k] == 0) {
 							if (myCount >= 4) {
-								superWeight[i + k][j + k] += 500;
+								superWeight[X + k][Y - k] += 500;
 								return;
 							} else if (myCount == 3) {
-								superWeight[i + k][j + k] += 100;
+								superWeight[X + k][Y - k] += 100;
 							}
 						}
 					}
 				}
 			}
 		}
-
+		
+		
+		
 		// 우대각 공격 시작점
 		// ----------------------------------------------------------------------
-		for (int i = 5; i < 19; i++) { // 5~18
-			for (int j = 0; j < 14; j++) { // 0~13
+		for (int X = 5; X < 19; X++) { // 5~18
+			for (int Y = 5; Y < 19; Y++) { // 0~13
 
 				myCount = 0;
 				emptyCount = 0;
 
 				for (int k = 0; k < 6; k++) { // 13~18, 본인부터...오른쪽아래로 내려가니까 우대각 /
-					if (playBoard[i - k][j + k] == color)
+					if (playBoard[X - k][Y - k] == color)
 						myCount++;
-					else if (playBoard[i - k][j + k] == 0)
+					else if (playBoard[X - k][Y - k] == 0)
 						emptyCount++;
 				}
 
 				// 칠목방지 + 인덱스범위
-				if (((i + 1 > 18 || j - 1 < 0) || playBoard[i + 1][j - 1] == color)
-						|| ((i - 6 < 0 || j + 6 > 18) || playBoard[i - 6][j + 6] == color))
+				if (((X + 1 > 18 || Y + 1 > 18 ) || playBoard[X + 1][Y + 1] == color)
+						|| ((X - 6 < 0 || Y - 6 < 0) || playBoard[X - 6][Y - 6] == color))
 					continue;
 
 				if (myCount + emptyCount == 6) {
 					for (int k = 0; k < 6; k++) { // 빈칸에 가중치 쏴주고 리턴
-						if (playBoard[i - k][j + k] == 0) {
+						if (playBoard[X - k][Y - k] == 0) {
 							if (myCount >= 4) {
-								superWeight[i - k][j + k] += 500;
+								superWeight[X - k][Y - k] += 500;
 								return;
 							} else if (myCount == 3) {
-								superWeight[i - k][j + k] += 100;
+								superWeight[X - k][Y - k] += 100;
 							}
 						}
 					}
 				}
 			}
 		}
+		
+		
+		
 
 		//// 안놓으면 질 때, 한방방어
 		//// ----------------------------------------------------------------------------------
@@ -995,9 +1004,6 @@ public class Betago {
 		addDefaultWeight();
 	}
 
-	//// 전개 플러스점수
-	// 6개 범위 내에서 나의/상대의 돌 갯수와 빈칸의 합이 6이라면 빈칸에 나의/상대의 돌 *10만큼 가중치 주기.
-
 	private static void addDefaultWeight() {
 
 		int myCount, yourCount, emptyCount;
@@ -1158,7 +1164,7 @@ public class Betago {
 	public static void showWeight() {
 		for (int i = 18; i >= 0; i--) {
 			for (int j = 0; j < 19; j++) {
-				System.out.printf("[%2d]", weight[j][i] + superWeight[j][i]);
+				System.out.printf("[%3d]", weight[j][i] + superWeight[j][i]);
 			}
 			System.out.println("");
 		}
