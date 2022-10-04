@@ -159,7 +159,7 @@ public class Betago {
 		// 좌대각 공격 시작점
 		// ----------------------------------------------------------------------
 		for (int X = 0; X < 14; X++) { // 0~13
-			for (int Y = 5; Y < 18; Y++) { // 0~13
+			for (int Y = 5; Y < 19; Y++) { // 5~18
 
 				myCount = 0;
 				emptyCount = 0;
@@ -196,7 +196,7 @@ public class Betago {
 		// 우대각 공격 시작점
 		// ----------------------------------------------------------------------
 		for (int X = 5; X < 19; X++) { // 5~18
-			for (int Y = 5; Y < 19; Y++) { // 0~13
+			for (int Y = 5; Y < 19; Y++) { // 5~18
 
 				myCount = 0;
 				emptyCount = 0;
@@ -1030,130 +1030,132 @@ public class Betago {
 
 		int myCount, yourCount, emptyCount;
 
+		
 		// 세로 시작점 ----------------------------------------------------------------------
-		for (int i = 0; i < 19; i++) { // 0~18
-			for (int j = 0; j < 14; j++) { // 0~12
+				for (int X = 0; X < 19; X++) { // 0~18
+					for (int Y = 0; Y < 14; Y++) { // 0~12
 
-				myCount = 0;
-				yourCount = 0;
-				emptyCount = 0;
+						myCount = 0;
+						yourCount = 0;
+						emptyCount = 0;
 
-				for (int k = 0; k < 6; k++) { // 13~18
-					if (playBoard[i][j + k] == color)
-						myCount++;
-					else if (playBoard[i][j + k] == 0)
-						emptyCount++;
-					else if (playBoard[i][j + k] == opponent)
-						yourCount++;
-				}
+						for (int k = 0; k < 6; k++) { // 13~18
+							if (playBoard[X][Y + k] == color)
+								myCount++;
+							else if (playBoard[X][Y + k] == 0)
+								emptyCount++;
+							else if (playBoard[X][Y + k] == opponent)
+								yourCount++;
+						}
 
-				if (myCount + emptyCount == 6) {
-					for (int k = 0; k < 6; k++) {
-						if (playBoard[i][j + k] == 0)
-							superWeight[i][j + k] += (myCount * 10);
-					}
-				} else if (yourCount + emptyCount == 6) {
-					for (int k = 0; k < 6; k++) {
-						if (playBoard[i][j + k] == 0)
-							superWeight[i][j + k] += (yourCount * 3);
-					}
-				}
+						if (myCount + emptyCount == 6) {
+							for (int k = 0; k < 6; k++) {
+								if (playBoard[X][Y + k] == 0)
+									superWeight[X][Y + k] += (myCount * 10);
+							}
+						} else if (yourCount + emptyCount == 6) {
+							for (int k = 0; k < 6; k++) {
+								if (playBoard[X][Y + k] == 0)
+									superWeight[X][Y + k] += (yourCount * 3);
+							}
+						}
 
-			}
-		}
-
-		// 가로 시작점
-		// -------------------------------------------------------------------------------------------------
-		for (int j = 0; j < 19; j++) {
-			for (int i = 0; i < 14; i++) {
-
-				myCount = 0;
-				yourCount = 0;
-				emptyCount = 0;
-
-				for (int k = 0; k < 6; k++) {
-					if (playBoard[i + k][j] == color)
-						myCount++;
-					else if (playBoard[i + k][j] == 0)
-						emptyCount++;
-				}
-
-				if (myCount + emptyCount == 6) {
-					for (int k = 0; k < 6; k++) {
-						if (playBoard[i + k][j] == 0)
-							superWeight[i + k][j] += (myCount * 10);
-					}
-				} else if (yourCount + emptyCount == 6) {
-					for (int k = 0; k < 6; k++) {
-						if (playBoard[i + k][j] == 0)
-							superWeight[i + k][j] += (yourCount * 3);
 					}
 				}
 
-			}
-		}
+				// 가로 시작점
+				// -------------------------------------------------------------------------------------------------
+				for (int Y = 0; Y < 19; Y++) {
+					for (int X = 0; X < 14; X++) {
 
-		// 좌대각 시작점
-		// ----------------------------------------------------------------------
-		for (int i = 0; i < 14; i++) { // 0~13
-			for (int j = 0; j < 14; j++) { // 0~13
+						myCount = 0;
+						yourCount = 0;
+						emptyCount = 0;
 
-				myCount = 0;
-				yourCount = 0;
-				emptyCount = 0;
+						for (int k = 0; k < 6; k++) {
+							if (playBoard[X + k][Y] == color)
+								myCount++;
+							else if (playBoard[X + k][Y] == 0)
+								emptyCount++;
+						}
 
-				for (int k = 0; k < 6; k++) { // 13~18, 본인부터 본인+5, 왼쪽아래로 내려가니까 좌대각 \
-					if (playBoard[i + k][j + k] == color)
-						myCount++;
-					else if (playBoard[i + k][j + k] == 0)
-						emptyCount++;
-				}
+						if (myCount + emptyCount == 6) {
+							for (int k = 0; k < 6; k++) {
+								if (playBoard[X + k][Y] == 0)
+									superWeight[X + k][Y] += (myCount * 10);
+							}
+						} else if (yourCount + emptyCount == 6) {
+							for (int k = 0; k < 6; k++) {
+								if (playBoard[X + k][Y] == 0)
+									superWeight[X + k][Y] += (yourCount * 3);
+							}
+						}
 
-				if (myCount + emptyCount == 6) {
-					for (int k = 0; k < 6; k++) {
-						if (playBoard[i + k][j + k] == 0)
-							superWeight[i + k][j + k] += (myCount * 10);
-					}
-				} else if (yourCount + emptyCount == 6) {
-					for (int k = 0; k < 6; k++) {
-						if (playBoard[i + k][j + k] == 0)
-							superWeight[i + k][j + k] += (yourCount * 3);
-					}
-				}
-
-			}
-		}
-
-		// 우대각 시작점
-		// ----------------------------------------------------------------------
-		for (int i = 5; i < 19; i++) { // 5~18
-			for (int j = 0; j < 14; j++) { // 0~13
-
-				myCount = 0;
-				yourCount = 0;
-				emptyCount = 0;
-
-				for (int k = 0; k < 6; k++) { // 13~18, 본인부터...오른쪽아래로 내려가니까 우대각 /
-					if (playBoard[i - k][j + k] == color)
-						myCount++;
-					else if (playBoard[i - k][j + k] == 0)
-						emptyCount++;
-				}
-
-				if (myCount + emptyCount == 6) {
-					for (int k = 0; k < 6; k++) {
-						if (playBoard[i - k][j + k] == 0)
-							superWeight[i - k][j + k] += (myCount * 10);
-					}
-				} else if (yourCount + emptyCount == 6) {
-					for (int k = 0; k < 6; k++) {
-						if (playBoard[i - k][j + k] == 0)
-							superWeight[i - k][j + k] += (yourCount * 3);
 					}
 				}
 
-			}
-		}
+				// 좌대각 시작점
+				// ----------------------------------------------------------------------
+				for (int X = 0; X < 14; X++) { // 0~13
+					for (int Y = 5; Y < 19; Y++) { // 5~18
+
+						myCount = 0;
+						yourCount = 0;
+						emptyCount = 0;
+
+						for (int k = 0; k < 6; k++) { // 13~18, 본인부터 본인+5, 왼쪽아래로 내려가니까 좌대각 \
+							if (playBoard[X + k][Y - k] == color)
+								myCount++;
+							else if (playBoard[X + k][Y - k] == 0)
+								emptyCount++;
+						}
+
+						if (myCount + emptyCount == 6) {
+							for (int k = 0; k < 6; k++) {
+								if (playBoard[X + k][Y - k] == 0)
+									superWeight[X + k][Y - k] += (myCount * 10);
+							}
+						} else if (yourCount + emptyCount == 6) {
+							for (int k = 0; k < 6; k++) {
+								if (playBoard[X + k][Y - k] == 0)
+									superWeight[X + k][Y - k] += (yourCount * 3);
+							}
+						}
+
+					}
+				}
+
+				// 우대각 시작점
+				// ----------------------------------------------------------------------
+				for (int X = 5; X < 19; X++) { // 5~18
+					for (int Y = 5; Y < 19; Y++) { // 5~18
+
+						myCount = 0;
+						yourCount = 0;
+						emptyCount = 0;
+
+						for (int k = 0; k < 6; k++) { // 13~18, 본인부터...오른쪽아래로 내려가니까 우대각 /
+							if (playBoard[X - k][Y - k] == color)
+								myCount++;
+							else if (playBoard[X - k][Y - k] == 0)
+								emptyCount++;
+						}
+
+						if (myCount + emptyCount == 6) {
+							for (int k = 0; k < 6; k++) {
+								if (playBoard[X - k][Y - k] == 0)
+									superWeight[X - k][Y - k] += (myCount * 10);
+							}
+						} else if (yourCount + emptyCount == 6) {
+							for (int k = 0; k < 6; k++) {
+								if (playBoard[X - k][Y - k] == 0)
+									superWeight[X - k][Y - k] += (yourCount * 3);
+							}
+						}
+
+					}
+				}
+		
 
 		System.out.println("Default weight added.");
 
