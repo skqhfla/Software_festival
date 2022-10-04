@@ -27,7 +27,7 @@ public class Betago {
 			System.out.printf("%2d ", Y + 1);
 			for (int X = 0; X < 19; X++) {
 				playBoard[X][Y] = origin[X][Y];
-				System.out.printf("[%2d]", playBoard[X][Y]);
+				System.out.printf("[%3d]", playBoard[X][Y]);
 			}
 			System.out.println("");
 		}
@@ -246,7 +246,7 @@ public class Betago {
 						// 상대 돌의 연속점? 세는거같은데 중간에 자기 색이 나오면 세던거 엎어버림.
 						if (playBoard[i + k][j] == opponent) {
 							myCount++;
-						} else if (playBoard[i + k][j] == color) {
+						} else if (playBoard[i + k][j] == color || playBoard[i + k][j] == red) {
 							myCount = 0;
 							break;
 						}
@@ -440,7 +440,7 @@ public class Betago {
 						// 상대 돌의 연속점? 세는거같은데 중간에 자기 색이 나오면 세던거 엎어버림.
 						if (playBoard[i][j + k] == opponent) {
 							myCount++;
-						} else if (playBoard[i][j + k] == color) {
+						} else if (playBoard[i][j + k] == color || playBoard[i][j + k] == red) {
 							myCount = 0;
 							break;
 						}
