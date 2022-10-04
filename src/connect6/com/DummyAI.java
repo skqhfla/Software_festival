@@ -5,7 +5,7 @@ public class DummyAI {
 	
 	static int mine;
 	static int opponent;
-	static int red;
+	static int red = 3;
 	
 	
 	//main method
@@ -67,10 +67,10 @@ public class DummyAI {
 	// return the person color. black = 1, white = 2, red = 3, empty = 0
 		public static int getYourColor() {
 			return opponent;
-	}
+	}	
 	
-	public static int getRedColor(){
-		return red;
+		public static int getRedColor() {
+			return red;
 	}
 	
 }
