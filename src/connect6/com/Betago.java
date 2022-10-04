@@ -44,6 +44,7 @@ public class Betago {
 
 		String result = stone1 + ":" + stone2;
 
+		System.out.println(result);
 		//showWeight();
 
 		return result;
