@@ -610,7 +610,7 @@ public class Betago {
 			}
 		}
 
-		// 좌대각)\) 방어 시작점
+				// 좌대각)\) 방어 시작점
 		// ------------------------------------------------------------------------
 
 		for (int Y = 18; Y > 4; Y--) {
@@ -621,6 +621,7 @@ public class Betago {
 					try {
 						if (playBoard[X + k][Y - k] == opponent) {
 							myCount++;
+							System.out.println("mycount = " + myCount + " X = " + (X + k) + " Y = " + (Y - k) + " k = " + k);
 						} else if (playBoard[X + k][Y - k] == 0) {
 							if (check == 0 && myCount != 0)
 								check = myCount;
@@ -675,24 +676,28 @@ public class Betago {
 						System.out.println("index error " + X + " " + Y);
 					}
 				} else if (myCount == 4) {
-					if (check == 4) {
+					if (check == 0) {
 						for (int k = 0; k < 6; k++) {
 							try {
+								System.out.println("좌대각 4개 연속");
 								// 4개 연속
 								if (playBoard[X + k][Y - k] == opponent) {
 									if (playBoard[X + k - 1][Y - k + 1] == 0 && playBoard[X + k + 4][Y - k - 4] == 0) {
 										superWeight[X + k - 1][Y - k + 1] += 500;
 										superWeight[X + k + 4][Y - k - 4] += 500;
+										System.out.println("좌대각 양쪽 뚫림");
 										return;
 									} else if ((playBoard[X + k - 1][Y - k + 1] == color
 											|| playBoard[X + k - 1][Y - k + 1] == red)
 											&& playBoard[X + k + 4][Y - k - 4] == 0) {
 										superWeight[X + k + 4][Y - k - 4] += 500;
+										System.out.println("좌대각 우측 뚫림");
 										return;
 									} else if ((playBoard[X + k + 4][Y - k - 4] == color
 											|| playBoard[X + k + 4][Y - k - 4] == red)
 											&& playBoard[X + k - 1][Y - k + 1] == 0) {
 										superWeight[X + k - 1][Y - k + 1] += 500;
+										System.out.println("좌대각 좌측 뚫림");
 										return;
 									}
 								}
@@ -814,7 +819,7 @@ public class Betago {
 		// 우대각 방어 시작점
 		// -------------------------------------------------------------------------------
 
-		for (int Y = 13; Y >= 0; Y--) {
+		for (int Y = 0; Y < 14; Y++) {
 			for (int X = 0; X < 14; X++) {
 				myCount = 0;
 				check = 0;
@@ -875,7 +880,7 @@ public class Betago {
 						System.out.println("index error " + X + " " + Y);
 					}
 				} else if (myCount == 4) {
-					if (check == 4) {
+					if (check == 0) {
 						for (int k = 0; k < 6; k++) {
 							try {
 								// 4개 연속
@@ -883,14 +888,17 @@ public class Betago {
 									if (playBoard[X + k - 1][Y + k - 1] == 0 && playBoard[X + k + 4][Y + k + 4] == 0) {
 										superWeight[X + k - 1][Y + k - 1] += 500;
 										superWeight[X + k + 4][Y + k + 4] += 500;
+										System.out.println("우대각 양쪽 뚫림");
 										return;
-									} else if ((playBoard[X - 1][Y - 1] == color || playBoard[X - 1][Y - 1] == red)
+									} else if ((playBoard[X + k - 1][Y + k - 1] == color || playBoard[X + k - 1][Y + k - 1] == red)
 											&& playBoard[X + k + 4][Y + k + 4] == 0) {
 										superWeight[X + k + 4][Y + k + 4] += 500;
+										System.out.println("우대각 좌쪽 뚫림");
 										return;
-									} else if ((playBoard[X + 4][Y + 4] == color || playBoard[X + 4][Y + 4] == red)
+									} else if ((playBoard[X + k + 4][Y + k + 4] == color || playBoard[X + k + 4][Y + k + 4] == red)
 											&& playBoard[X + k - 1][Y + k - 1] == 0) {
 										superWeight[X + k - 1][Y + k - 1] += 500;
+										System.out.println("우대각 우쪽 뚫림");
 										return;
 									}
 								}
