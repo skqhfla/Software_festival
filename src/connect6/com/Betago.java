@@ -262,7 +262,7 @@ public class Betago {
 									superWeight[i][j] += 500;
 									superWeight[i + 6][j] += 500;
 									return;
-								} else if (playBoard[i + 6][j] == color) {
+								} else if (playBoard[i + 6][j] == color || playBoard[i + 6][j] == red) {
 									superWeight[i][j] += 500;
 									return;
 								}
@@ -271,7 +271,7 @@ public class Betago {
 									superWeight[i - 1][j] += 500;
 									superWeight[i + 5][j] += 500;
 									return;
-								} else if (playBoard[i - 1][j] == color) {
+								} else if (playBoard[i - 1][j] == color || playBoard[i - 1][j] == red) {
 									superWeight[i + 5][j] += 500;
 									return;
 								}
@@ -305,10 +305,10 @@ public class Betago {
 										superWeight[i + k - 1][j] += 500;
 										superWeight[i + k + 4][j] += 500;
 										return;
-									} else if (playBoard[i - 1][j] == color && playBoard[i + k + 4][j] == 0) {
+									} else if ((playBoard[i - 1][j] == color || playBoard[i - 1][j] == red) && playBoard[i + k + 4][j] == 0) {
 										superWeight[i + k + 4][j] += 500;
 										return;
-									} else if (playBoard[i + 4][j] == color && playBoard[i + k - 1][j] == 0) {
+									} else if ((playBoard[i + 4][j] == color || playBoard[i + 4][j] == red) && playBoard[i + k - 1][j] == 0) {
 										superWeight[i + k - 1][j] += 500;
 										return;
 									}
@@ -325,10 +325,10 @@ public class Betago {
 										superWeight[i + k - 1][j] += 500;
 										superWeight[i + k + 5][j] += 500;
 										return;
-									} else if (k == 0 && playBoard[i + k - 1][j] == color) {
+									} else if (k == 0 && (playBoard[i + k - 1][j] == color || playBoard[i + k - 1][j] == red)) {
 										superWeight[i + k + 5][j] += 500;
 										return;
-									} else if (k == 1 && playBoard[i + k + 5][j] == color) {
+									} else if (k == 1 && (playBoard[i + k + 5][j] == color || playBoard[i + k + 5][j] == red)) {
 										superWeight[i + k - 1][j] += 500;
 										return;
 									}
@@ -355,10 +355,10 @@ public class Betago {
 										superWeight[i + k - 1][j] += 500;
 										superWeight[i + k + 5][j] += 500;
 										return;
-									} else if (k == 0 && playBoard[i + k - 1][j] == color) {
+									} else if (k == 0 && (playBoard[i + k - 1][j] == color || playBoard[i + k - 1][j] == red)) {
 										superWeight[i + k + 5][j] += 500;
 										return;
-									} else if (k == 1 && playBoard[i + k + 5][j] == color) {
+									} else if (k == 1 && (playBoard[i + k + 5][j] == color || playBoard[i + k + 5][j] == red)) {
 										superWeight[i + k - 1][j] += 500;
 										return;
 									}
@@ -384,10 +384,10 @@ public class Betago {
 										superWeight[i + k - 1][j] += 500;
 										superWeight[i + k + 5][j] += 500;
 										return;
-									} else if (k == 0 && playBoard[i + k - 1][j] == color) {
+									} else if (k == 0 && (playBoard[i + k - 1][j] == color || playBoard[i + k - 1][j] == red)) {
 										superWeight[i + k + 5][j] += 500;
 										return;
-									} else if (k == 1 && playBoard[i + k + 5][j] == color) {
+									} else if (k == 1 && (playBoard[i + k + 5][j] == color || playBoard[i + k + 5][j] == red)) {
 										superWeight[i + k - 1][j] += 500;
 										return;
 									}
@@ -454,7 +454,7 @@ public class Betago {
 									superWeight[i][j] += 500;
 									superWeight[i][j + 6] += 500;
 									return;
-								} else if (playBoard[i][j + 6] == color) {
+								} else if (playBoard[i][j + 6] == color || playBoard[i][j + 6] == red) {
 									superWeight[i][j] += 500;
 									return;
 								}
@@ -463,7 +463,7 @@ public class Betago {
 									superWeight[i][j - 1] += 500;
 									superWeight[i][j + 5] += 500;
 									return;
-								} else if (playBoard[i][j - 1] == color) {
+								} else if (playBoard[i][j - 1] == color || playBoard[i][j - 1] == red) {
 									superWeight[i][j + 5] += 500;
 									return;
 								}
@@ -497,10 +497,10 @@ public class Betago {
 										superWeight[i][j + k - 1] += 500;
 										superWeight[i][j + k + 4] += 500;
 										return;
-									} else if (playBoard[i][j - 1] == color && playBoard[i][j + k + 4] == 0) {
+									} else if ((playBoard[i][j - 1] == color || playBoard[i][j - 1] == red) && playBoard[i][j + k + 4] == 0) {
 										superWeight[i][j + k + 4] += 500;
 										return;
-									} else if (playBoard[i][j + 4] == color && playBoard[i][j + k - 1] == 0) {
+									} else if ((playBoard[i][j + 4] == color || playBoard[i][j + 4] == red) && playBoard[i][j + k - 1] == 0) {
 										superWeight[i][j + k - 1] += 500;
 										return;
 									}
@@ -517,10 +517,10 @@ public class Betago {
 										superWeight[i][j + k - 1] += 500;
 										superWeight[i][j + k + 5] += 500;
 										return;
-									} else if (k == 0 && playBoard[i][j + k - 1] == color) {
+									} else if (k == 0 && (playBoard[i][j + k - 1] == color || playBoard[i][j + k - 1] == red)) {
 										superWeight[i][j + k + 5] += 500;
 										return;
-									} else if (k == 1 && playBoard[i][j + k + 5] == color) {
+									} else if (k == 1 && (playBoard[i][j + k + 5] == color || playBoard[i][j + k + 5] == red)) {
 										superWeight[i][j + k - 1] += 500;
 										return;
 									}
@@ -547,10 +547,10 @@ public class Betago {
 										superWeight[i][j + k - 1] += 500;
 										superWeight[i][j + k + 5] += 500;
 										return;
-									} else if (k == 0 && playBoard[i][j + k - 1] == color) {
+									} else if (k == 0 && (playBoard[i][j + k - 1] == color || playBoard[i][j + k - 1] == red)) {
 										superWeight[i][j + k + 5] += 500;
 										return;
-									} else if (k == 1 && playBoard[i][j + k + 5] == color) {
+									} else if (k == 1 && (playBoard[i][j + k + 5] == color || playBoard[i][j + k + 5] == red)) {
 										superWeight[i][j + k - 1] += 500;
 										return;
 									}
@@ -576,10 +576,10 @@ public class Betago {
 										superWeight[i][j + k - 1] += 500;
 										superWeight[i][j + k + 5] += 500;
 										return;
-									} else if (k == 0 && playBoard[i][j + k - 1] == color) {
+									} else if (k == 0 && (playBoard[i][j + k - 1] == color || playBoard[i][j + k - 1] == red)) {
 										superWeight[i][j + k + 5] += 500;
 										return;
-									} else if (k == 1 && playBoard[i][j + k + 5] == color) {
+									} else if (k == 1 && (playBoard[i][j + k + 5] == color || playBoard[i][j + k + 5] == red)) {
 										superWeight[i][j + k - 1] += 500;
 										return;
 									}
