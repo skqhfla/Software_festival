@@ -1195,7 +1195,7 @@ public class Betago {
 		}
 		System.out.print("   ");
 		for(int o = 0; o < 19; o++) {
-			System.out.printf("  %c  ", 65+o);
+			System.out.printf("  %c  ", ((o < 8) ? (o + 'A') : (o + 'A' + 1)));
 		}
 		System.out.println("\n");
 	}
