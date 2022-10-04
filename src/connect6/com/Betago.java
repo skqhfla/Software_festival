@@ -236,8 +236,8 @@ public class Betago {
 
 		// 가로 방어 시작점 ------------------------------------------------------
 
-		for (int X = 0; X < 14; X++) { // 14넘으면 여섯개 범위 잡을 때 어차피 인덱스 에러 나니깐...
-			for (int Y = 0; Y < 19; Y++) {
+		for (int Y = 0; Y < 19; Y++) {
+			for (int X = 0; X < 14; X++) {
 				myCount = 0;
 				check = 0;
 				// 본인기준 여섯개 체크
@@ -246,7 +246,7 @@ public class Betago {
 						// 상대 돌의 연속점? 세는거같은데 중간에 자기 색이 나오면 세던거 엎어버림.
 						if (playBoard[X + k][Y] == opponent) {
 							myCount++;
-							System.out.println("mycount = " + myCount + " X = " + (X + k) + " Y = " + Y + " k = " + k + "\ncheck = " + check);
+							System.out.println("mycount = " + myCount + " X = " + (X + k) + " Y = " + (Y - k) + " k = " + k + "\ncheck = " + check);
 						} else if (playBoard[X + k][Y] == color || playBoard[X + k][Y] == red) {
 							myCount = 0;
 							break;
@@ -431,8 +431,8 @@ public class Betago {
 
 		// 세로 방어 시작점 ------------------------------------------------------
 
-		for (int X = 0; X < 19; X++) {
-			for (int Y = 0; Y < 14; Y++) { // 14넘으면 여섯개 범위 잡을 때 어차피 인덱스 에러 나니깐...
+		for (int Y = 0; Y < 14; Y++) {
+			for (int X = 0; X < 19; X++) { // 14넘으면 여섯개 범위 잡을 때 어차피 인덱스 에러 나니깐...
 				myCount = 0;
 				check = 0;
 				// 본인기준 여섯개 체크
@@ -441,7 +441,7 @@ public class Betago {
 						// 상대 돌의 연속점? 세는거같은데 중간에 자기 색이 나오면 세던거 엎어버림.
 						if (playBoard[X][Y + k] == opponent) {
 							myCount++;
-							System.out.println("mycount = " + myCount + " X = " + X + " Y = " + (Y + k) + " k = " + k + "\ncheck = " + check);
+							System.out.println("mycount = " + myCount + " X = " + (X + k) + " Y = " + (Y - k) + " k = " + k + "\ncheck = " + check);
 						} else if (playBoard[X][Y + k] == color || playBoard[X][Y + k] == red) {
 							myCount = 0;
 							break;
@@ -504,7 +504,9 @@ public class Betago {
 						if (check == 4 || check == 0) {
 							for (int k = 0; k < 6; k++) {
 								// 4개 연속
+								System.out.println("세로 4개 연속");
 								if (playBoard[X][Y + k] == opponent) {
+									System.out.println("시작점 X = " + X + " Y = " + (Y + k));
 									if (playBoard[X][Y + k - 1] == 0 && playBoard[X][Y + k + 4] == 0) {
 										superWeight[X][Y + k - 1] += 500;
 										superWeight[X][Y + k + 4] += 500;
@@ -839,7 +841,7 @@ public class Betago {
 					try {
 						if (playBoard[X + k][Y + k] == opponent) {
 							myCount++;
-							System.out.println("mycount = " + myCount + " X = " + (X + k) + " Y = " + (Y + k) + " k = " + k + "\ncheck = " + check);
+							System.out.println("mycount = " + myCount + " X = " + (X + k) + " Y = " + (Y - k) + " k = " + k + "\ncheck = " + check);
 						} else if (playBoard[X + k][Y + k] == 0) {
 							if (check == 0 && myCount != 0)
 								check = myCount;
@@ -1195,7 +1197,7 @@ public class Betago {
 		}
 		System.out.print("   ");
 		for(int o = 0; o < 19; o++) {
-			System.out.printf("  %c  ", ((o < 8) ? (o + 'A') : (o + 'A' + 1)));
+			System.out.printf("  %c  ", 65+o);
 		}
 		System.out.println("\n");
 	}
