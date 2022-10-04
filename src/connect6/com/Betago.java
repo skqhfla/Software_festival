@@ -44,7 +44,7 @@ public class Betago {
 
 		String result = stone1 + ":" + stone2;
 
-		showWeight();
+		//showWeight();
 
 		return result;
 
@@ -621,7 +621,7 @@ public class Betago {
 					try {
 						if (playBoard[X + k][Y - k] == opponent) {
 							myCount++;
-							System.out.println("mycount = " + myCount + " X = " + (X + k) + " Y = " + (Y - k) + " k = " + k);
+							//System.out.println("mycount = " + myCount + " X = " + (X + k) + " Y = " + (Y - k) + " k = " + k + "\ncheck = " + check);
 						} else if (playBoard[X + k][Y - k] == 0) {
 							if (check == 0 && myCount != 0)
 								check = myCount;
@@ -676,28 +676,28 @@ public class Betago {
 						System.out.println("index error " + X + " " + Y);
 					}
 				} else if (myCount == 4) {
-					if (check == 0) {
+					if (check == 0 || check == 4) {
 						for (int k = 0; k < 6; k++) {
 							try {
-								System.out.println("좌대각 4개 연속");
+								//System.out.println("좌대각 4개 연속");
 								// 4개 연속
 								if (playBoard[X + k][Y - k] == opponent) {
 									if (playBoard[X + k - 1][Y - k + 1] == 0 && playBoard[X + k + 4][Y - k - 4] == 0) {
 										superWeight[X + k - 1][Y - k + 1] += 500;
 										superWeight[X + k + 4][Y - k - 4] += 500;
-										System.out.println("좌대각 양쪽 뚫림");
+										//System.out.println("좌대각 양쪽 뚫림");
 										return;
 									} else if ((playBoard[X + k - 1][Y - k + 1] == color
 											|| playBoard[X + k - 1][Y - k + 1] == red)
 											&& playBoard[X + k + 4][Y - k - 4] == 0) {
 										superWeight[X + k + 4][Y - k - 4] += 500;
-										System.out.println("좌대각 우측 뚫림");
+										//System.out.println("좌대각 우측 뚫림");
 										return;
 									} else if ((playBoard[X + k + 4][Y - k - 4] == color
 											|| playBoard[X + k + 4][Y - k - 4] == red)
 											&& playBoard[X + k - 1][Y - k + 1] == 0) {
 										superWeight[X + k - 1][Y - k + 1] += 500;
-										System.out.println("좌대각 좌측 뚫림");
+										//System.out.println("좌대각 좌측 뚫림");
 										return;
 									}
 								}
@@ -827,6 +827,7 @@ public class Betago {
 					try {
 						if (playBoard[X + k][Y + k] == opponent) {
 							myCount++;
+							//System.out.println("mycount = " + myCount + " X = " + (X + k) + " Y = " + (Y - k) + " k = " + k + "\ncheck = " + check);
 						} else if (playBoard[X + k][Y + k] == 0) {
 							if (check == 0 && myCount != 0)
 								check = myCount;
@@ -880,7 +881,7 @@ public class Betago {
 						System.out.println("index error " + X + " " + Y);
 					}
 				} else if (myCount == 4) {
-					if (check == 0) {
+					if (check == 0 || check == 4) {
 						for (int k = 0; k < 6; k++) {
 							try {
 								// 4개 연속
@@ -888,17 +889,17 @@ public class Betago {
 									if (playBoard[X + k - 1][Y + k - 1] == 0 && playBoard[X + k + 4][Y + k + 4] == 0) {
 										superWeight[X + k - 1][Y + k - 1] += 500;
 										superWeight[X + k + 4][Y + k + 4] += 500;
-										System.out.println("우대각 양쪽 뚫림");
+										//System.out.println("우대각 양쪽 뚫림");
 										return;
 									} else if ((playBoard[X + k - 1][Y + k - 1] == color || playBoard[X + k - 1][Y + k - 1] == red)
 											&& playBoard[X + k + 4][Y + k + 4] == 0) {
 										superWeight[X + k + 4][Y + k + 4] += 500;
-										System.out.println("우대각 좌쪽 뚫림");
+										//System.out.println("우대각 우쪽 뚫림");
 										return;
 									} else if ((playBoard[X + k + 4][Y + k + 4] == color || playBoard[X + k + 4][Y + k + 4] == red)
 											&& playBoard[X + k - 1][Y + k - 1] == 0) {
 										superWeight[X + k - 1][Y + k - 1] += 500;
-										System.out.println("우대각 우쪽 뚫림");
+										//System.out.println("우대각 좌쪽 뚫림");
 										return;
 									}
 								}
@@ -1171,7 +1172,7 @@ public class Betago {
 	// 현재 가중치 상태 콘솔에 출력
 	public static void showWeight() {
 		for (int i = 18; i >= 0; i--) {
-			System.out.printf("%2d ", 19-i);
+			System.out.printf("%2d ", i + 1);
 			for (int j = 0; j < 19; j++) {
 				System.out.printf("[%3d]", weight[j][i] + superWeight[j][i]);
 			}
@@ -1181,7 +1182,7 @@ public class Betago {
 		for(int o = 0; o < 19; o++) {
 			System.out.printf("  %c  ", 65+o);
 		}
-		System.out.println("");
+		System.out.println("\n");
 	}
 
 }
