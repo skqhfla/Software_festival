@@ -24,22 +24,31 @@ public class Betago {
 	public static String returnStringCoor() {
 
 		for (int Y = 18; Y >= 0; Y--) {
+			System.out.printf("%2d ", Y + 1);
 			for (int X = 0; X < 19; X++) {
 				playBoard[X][Y] = origin[X][Y];
 				System.out.printf("[%2d]", playBoard[X][Y]);
 			}
 			System.out.println("");
 		}
+		
+		System.out.print("   ");
+		for(int o = 0; o < 19; o++) {
+			System.out.printf("  %c  ", 65+o);
+		}
+		System.out.println("\n");
 
 		returnPoint();
 		// x, y를 바탕으로 String형태의 머시깽이...
 		String stone1 = String.format("%c%02d", (char) ((x < 8) ? (x + 'A') : (x + 'A' + 1)), y + 1);
 
+		weight[x][y] = -10000;
 		// 일단여기는절대두지말라는뜻!!!! board를 직접 수정하면 NOTEMPTY에러가 나서 임시방편으로...
 		getTempBoard(x, y);
 		// 방금 자기가 놓은거 업데이트해주고
 
 		returnPoint();
+		weight[x][y] = -10000;
 		String stone2 = String.format("%c%02d", (char) ((x < 8) ? (x + 'A') : (x + 'A' + 1)), y + 1);
 
 		String result = stone1 + ":" + stone2;
