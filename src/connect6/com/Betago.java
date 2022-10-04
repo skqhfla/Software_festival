@@ -51,6 +51,7 @@ public class Betago {
 
 		returnPoint();
 		//weight[x][y] = -10000;
+		count = false;
 		String stone2 = String.format("%c%02d", (char) ((x < 8) ? (x + 'A') : (x + 'A' + 1)), y + 1);
 
 		String result = stone1 + ":" + stone2;
