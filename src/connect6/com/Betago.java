@@ -40,7 +40,6 @@ public class Betago {
 		System.out.println("\n");
 
 		returnPoint();
-		count = true;
 		// x, y를 바탕으로 String형태의 머시깽이...
 		String stone1 = String.format("%c%02d", (char) ((x < 8) ? (x + 'A') : (x + 'A' + 1)), y + 1);
 
@@ -51,7 +50,6 @@ public class Betago {
 
 		returnPoint();
 		//weight[x][y] = -10000;
-		count = false;
 		String stone2 = String.format("%c%02d", (char) ((x < 8) ? (x + 'A') : (x + 'A' + 1)), y + 1);
 
 		String result = stone1 + ":" + stone2;
@@ -1180,6 +1178,7 @@ public class Betago {
 		System.out.println("before addSuperWeight\n");
 
 		addSuperWeight();
+		count = !count;
 		System.out.println("done addsuperWeight");
 		// showWeight();
 
