@@ -246,7 +246,7 @@ public class Betago {
 						// 상대 돌의 연속점? 세는거같은데 중간에 자기 색이 나오면 세던거 엎어버림.
 						if (playBoard[X + k][Y] == opponent) {
 							myCount++;
-							System.out.println("mycount = " + myCount + " X = " + (X + k) + " Y = " + (Y - k) + " k = " + k + "\ncheck = " + check);
+							System.out.println("가로 mycount = " + myCount + " X = " + (X + k) + " Y = " + (Y - k) + " k = " + k + "\ncheck = " + check);
 						} else if (playBoard[X + k][Y] == color || playBoard[X + k][Y] == red) {
 							myCount = 0;
 							break;
@@ -441,7 +441,7 @@ public class Betago {
 						// 상대 돌의 연속점? 세는거같은데 중간에 자기 색이 나오면 세던거 엎어버림.
 						if (playBoard[X][Y + k] == opponent) {
 							myCount++;
-							System.out.println("mycount = " + myCount + " X = " + (X + k) + " Y = " + (Y - k) + " k = " + k + "\ncheck = " + check);
+							System.out.println("세로 mycount = " + myCount + " X = " + (X + k) + " Y = " + (Y - k) + " k = " + k + "\ncheck = " + check);
 						} else if (playBoard[X][Y + k] == color || playBoard[X][Y + k] == red) {
 							myCount = 0;
 							break;
@@ -635,7 +635,7 @@ public class Betago {
 					try {
 						if (playBoard[X + k][Y - k] == opponent) {
 							myCount++;
-							System.out.println("mycount = " + myCount + " X = " + (X + k) + " Y = " + (Y - k) + " k = " + k + "\ncheck = " + check);
+							System.out.println("좌대각 mycount = " + myCount + " X = " + (X + k) + " Y = " + (Y - k) + " k = " + k + "\ncheck = " + check);
 						} else if (playBoard[X + k][Y - k] == 0) {
 							if (check == 0 && myCount != 0)
 								check = myCount;
@@ -841,7 +841,7 @@ public class Betago {
 					try {
 						if (playBoard[X + k][Y + k] == opponent) {
 							myCount++;
-							System.out.println("mycount = " + myCount + " X = " + (X + k) + " Y = " + (Y - k) + " k = " + k + "\ncheck = " + check);
+							System.out.println("우대각 mycount = " + myCount + " X = " + (X + k) + " Y = " + (Y - k) + " k = " + k + "\ncheck = " + check);
 						} else if (playBoard[X + k][Y + k] == 0) {
 							if (check == 0 && myCount != 0)
 								check = myCount;
