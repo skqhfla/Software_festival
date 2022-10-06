@@ -28,6 +28,9 @@ public class Betago {
 			System.out.printf("%2d ", Y + 1);
 			for (int X = 0; X < 19; X++) {
 				playBoard[X][Y] = origin[X][Y];
+				if(playBoard[X][Y] != 0){
+					weight[X][Y] = -10000;
+				}
 				System.out.printf("[%3d]", playBoard[X][Y]);
 			}
 			System.out.println("");
