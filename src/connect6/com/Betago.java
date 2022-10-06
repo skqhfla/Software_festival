@@ -44,7 +44,7 @@ public class Betago {
 		// x, y를 바탕으로 String형태의 머시깽이...
 		String stone1 = String.format("%c%02d", (char) ((x < 8) ? (x + 'A') : (x + 'A' + 1)), y + 1);
 
-		// weight[x][y] = -10000;
+		 weight[x][y] = -10000;
 		// 일단여기는절대두지말라는뜻!!!! board를 직접 수정하면 NOTEMPTY에러가 나서 임시방편으로...
 		getTempBoard(x, y);
 		// 방금 자기가 놓은거 업데이트해주고
