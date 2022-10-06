@@ -249,7 +249,7 @@ public class Betago {
 								// 상대 돌의 연속점? 세는거같은데 중간에 자기 색이 나오면 세던거 엎어버림.
 								if (playBoard[X + k][Y] == opponent) {
 									myCount++;
-									System.out.println("가로 mycount = " + myCount + " X = " + (X + k) + " Y = " + (Y - k) + " k = " + k + "\ncheck = " + check);
+									System.out.println("가로 mycount = " + myCount + " X = " + (X + k) + " Y = " + Y + " k = " + k + "\ncheck = " + check);
 								} else if (playBoard[X + k][Y] == color || playBoard[X + k][Y] == red) {
 									myCount = 0;
 									break;
@@ -276,7 +276,7 @@ public class Betago {
 											superWeight[X][Y] += 999;
 											superWeight[X + 6][Y] += 999;
 											return;
-										} else if (playBoard[X + 6][Y] == color || playBoard[X + 6][Y] == red) {
+										} else if (playBoard[X + 6][Y] != opponent) {
 											superWeight[X][Y] += 999;
 											return;
 										}
@@ -465,7 +465,7 @@ public class Betago {
 								// 상대 돌의 연속점? 세는거같은데 중간에 자기 색이 나오면 세던거 엎어버림.
 								if (playBoard[X][Y + k] == opponent) {
 									myCount++;
-									System.out.println("세로 mycount = " + myCount + " X = " + (X + k) + " Y = " + (Y - k) + " k = " + k + "\ncheck = " + check);
+									System.out.println("세로 mycount = " + myCount + " X = " + X + " Y = " + (Y + k) + " k = " + k + "\ncheck = " + check);
 								} else if (playBoard[X][Y + k] == color || playBoard[X][Y + k] == red) {
 									myCount = 0;
 									break;
@@ -490,7 +490,7 @@ public class Betago {
 											superWeight[X][Y] += 999;
 											superWeight[X][Y + 6] += 999;
 											return;
-										} else if (playBoard[X][Y + 6] == color || playBoard[X][Y + 6] == red) {
+										} else if (playBoard[X][Y + 6] != opponent) {
 											superWeight[X][Y] += 999;
 											return;
 										}
@@ -702,7 +702,7 @@ public class Betago {
 										superWeight[X][Y] += 999;
 										superWeight[X + 6][Y + 6] += 999;
 										return;
-									} else if (playBoard[X + 6][Y - 6] == color || playBoard[X + 6][Y - 6] == red) {
+									} else if (playBoard[X + 6][Y - 6] != opponent) {
 										superWeight[X][Y] += 999;
 										return;
 									}
@@ -909,7 +909,7 @@ public class Betago {
 					try {
 						if (playBoard[X + k][Y + k] == opponent) {
 							myCount++;
-							System.out.println("우대각 mycount = " + myCount + " X = " + (X + k) + " Y = " + (Y - k)
+							System.out.println("우대각 mycount = " + myCount + " X = " + (X + k) + " Y = " + (Y + k)
 									+ " k = " + k + "\ncheck = " + check);
 						} else if (playBoard[X + k][Y + k] == 0) {
 							if (check == 0 && myCount != 0)
@@ -933,7 +933,7 @@ public class Betago {
 										superWeight[X][Y] += 999;
 										superWeight[X + 6][Y + 6] += 999;
 										return;
-									} else if (playBoard[X + 6][Y + 6] == color || playBoard[X + 6][Y + 6] == red) {
+									} else if (playBoard[X + 6][Y + 6] != opponent) {
 										superWeight[X][Y] += 999;
 										return;
 									}
